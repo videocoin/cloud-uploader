@@ -1,0 +1,111 @@
+package service
+
+import (
+	"errors"
+	"io"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+
+	drive "google.golang.org/api/drive/v3"
+	"google.golang.org/api/googleapi/transport"
+)
+
+var (
+	ErrInvalidURL                 = errors.New("Invalid URL")
+	ErrInvalidVideoFormat         = errors.New("Invalid video format")
+	ErrInvalidVideoSize           = errors.New("Invalid video file size")
+	ErrInvalidGDriveURL           = errors.New("Invalid Google Drive URL")
+	ErrUnsupportedVideotypeFormat = errors.New("Unsupported stereo type")
+	ErrFailedUpload               = errors.New("Failed to upload video from link. Check that the linked video exists and is publicly accessible.")
+)
+
+func (s *UploaderService) DownloadFromURL(urlStr string, dstPath string) error {
+
+	s.logger.Info("downloading file")
+
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return ErrInvalidURL
+	}
+
+	q := u.Query()
+
+	if strings.HasPrefix(u.Host, "drive.google") {
+		GDriveID, err := getGDriveFileID(urlStr)
+		err = s.downloadGdriveFile(GDriveID, dstPath)
+		if err != nil {
+			return err
+		}
+	} else {
+		if strings.HasPrefix(u.Host, "www.dropbox") ||
+			strings.HasPrefix(u.Host, "dropbox") {
+
+			q.Set("raw", "1")
+			u.RawQuery = q.Encode()
+			urlStr = u.String()
+		}
+
+		err := s.downloadBaseFile(urlStr, dstPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	s.logger.Info("file has been downloaded")
+
+	return nil
+}
+
+func (s *UploaderService) downloadBaseFile(urlStr string, dstPath string) error {
+	resp, err := http.Get(urlStr)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	done := make(chan bool)
+
+	if _, err := io.Copy(dst, resp.Body); err != nil {
+		return err
+	}
+	done <- true
+
+	return nil
+}
+
+func (s *UploaderService) downloadGdriveFile(gdriveId string, dstPath string) error {
+	srv, err := drive.New(&http.Client{
+		Transport: &transport.APIKey{Key: s.config.GDriveKey},
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := srv.Files.Get(gdriveId).Download()
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+	done := make(chan bool)
+	if _, err = io.Copy(dst, resp.Body); err != nil {
+		return err
+	}
+	done <- true
+
+	return nil
+}
