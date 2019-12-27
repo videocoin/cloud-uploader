@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"github.com/opentracing/opentracing-go"
-	splitterv1 "github.com/videocoin/cloud-api/splitter/private/v1"
+	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 )
 

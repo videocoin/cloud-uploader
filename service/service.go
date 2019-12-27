@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/sirupsen/logrus"
-	splitterv1 "github.com/videocoin/cloud-api/splitter/private/v1"
+	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/grpcutil"
