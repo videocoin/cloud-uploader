@@ -50,7 +50,10 @@ function get_vars() {
     log_info "Getting variables..."
     readonly KUBE_CONTEXT=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/common/kube_context`
     readonly USERS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/usersRpcAddr`
-    
+    readonly STREAMS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/streamsRpcAddr`
+    readonly SPLITTER_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/splitterRpcAddr`
+    readonly FS_PATH=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/fsPath`
+    readonly FS_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/fsAddr`
     readonly GDRIVE_KEY=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/gdriveKey`
     readonly AUTH_TOKEN_SECRET=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/authTokenSecret`
     readonly SENTRY_DSN=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/sentryDsn`
@@ -64,6 +67,10 @@ function deploy() {
         --timeout 60 \
         --set image.tag="${VERSION}" \
         --set config.usersRpcAddr="${USERS_RPC_ADDR}" \
+        --set config.streamsRpcAddr="${STREAMS_RPC_ADDR}" \
+        --set config.splitterRpcAddr="${SPLITTER_RPC_ADDR}" \
+        --set config.fsPath="${FS_PATH}" \
+        --set config.fsAddr="${FS_ADDR}" \
         --set secrets.gdriveKey="${GDRIVE_KEY}" \
         --set secrets.authTokenSecret="${AUTH_TOKEN_SECRET}" \
         --set secrets.sentryDsn="${SENTRY_DSN}" \

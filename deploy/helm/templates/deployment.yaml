@@ -43,13 +43,23 @@ spec:
               value: "6831"
             - name: ADDR
               value: 0.0.0.0:{{ .Values.service.internalHttpPort }}
-            - name: DownloadDir
-              value: "/uploads"
+            - name: DOWNLOAD_DIR
+              value: "/uploads/downloads"
             - name: USERS_RPC_ADDR
               valueFrom:
                 configMapKeyRef:
                   name: {{ .Chart.Name }}
                   key: usersRpcAddr
+            - name: STREAMS_RPC_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Chart.Name }}
+                  key: streamsRpcAddr
+            - name: SPLITTER_RPC_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Chart.Name }}
+                  key: splitterRpcAddr
             - name: AUTH_TOKEN_SECRET
               valueFrom:
                 secretKeyRef:
