@@ -4,6 +4,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/sirupsen/logrus"
+	splitterv1 "github.com/videocoin/cloud-api/splitter/private/v1"
+	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"net/http"
@@ -15,6 +17,8 @@ type UploaderService struct {
 	logger       *logrus.Entry
 	api          *echo.Echo
 	users        usersv1.UserServiceClient
+	streams      privatev1.StreamsServiceClient
+	splitter     splitterv1.SplitterServiceClient
 	ProcessErrCh chan error
 }
 
@@ -45,10 +49,24 @@ func NewService(
 	}
 	users := usersv1.NewUserServiceClient(conn)
 
+	conn, err = grpcutil.Connect(config.StreamsRPCAddr, config.Logger.WithField("system", "streamscli"))
+	if err != nil {
+		return nil, err
+	}
+	streams := privatev1.NewStreamsServiceClient(conn)
+
+	conn, err = grpcutil.Connect(config.SplitterRPCAddr, config.Logger.WithField("system", "splittercli"))
+	if err != nil {
+		return nil, err
+	}
+	splitter := splitterv1.NewSplitterServiceClient(conn)
+
 	return &UploaderService{
 		config:       config,
 		logger:       config.Logger,
 		api:          api,
+		streams:      streams,
+		splitter:     splitter,
 		users:        users,
 		ProcessErrCh: processErrCh,
 	}, nil

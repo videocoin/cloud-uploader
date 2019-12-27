@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"context"
 	"io"
 	"net/http"
 	"os"
@@ -11,6 +11,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"github.com/opentracing/opentracing-go"
+	splitterv1 "github.com/videocoin/cloud-api/splitter/private/v1"
+	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
+)
+
+const (
+	MIMEVideoMP4       = "video/mp4"
+	MIMEVideoQuickTime = "video/quicktime"
 )
 
 type requestData struct {
@@ -31,7 +38,10 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("userID %v, StreamID %v\n", userID, streamID)
+	err = s.validate(c, userID)
+	if err != nil {
+		return err
+	}
 	reqData := new(requestData)
 	err = c.Bind(reqData)
 	if err != nil {
@@ -53,7 +63,7 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 			s.ProcessErrCh <- err
 			return err
 		}
-
+		s.notifySplitter(streamID, dstPath)
 		return nil
 	}(reqData.URL, dstPath)
 
@@ -66,7 +76,10 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("userID %v, StreamID %v\n", userID, streamID)
+	err = s.validate(c, userID)
+	if err != nil {
+		return err
+	}
 
 	file, err := c.FormFile("file")
 
@@ -93,8 +106,26 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 	if _, err = io.Copy(dst, src); err != nil {
 		return err
 	}
-
+	s.notifySplitter(streamID, dstPath)
 	return c.NoContent(http.StatusCreated)
+}
+
+func (s *UploaderService) validate(ctx echo.Context, userID string) error {
+	streamID := ctx.Param("id")
+	stream, err := s.streams.Get(context.Background(), &privatev1.StreamRequest{Id: streamID})
+	if err != nil {
+		return err
+	}
+	if stream.UserID != userID {
+		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+	}
+
+	contentType := ctx.Request().Header.Get("Content-Type")
+	if contentType != MIMEVideoMP4 && contentType != MIMEVideoQuickTime {
+	 	return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+	}
+
+	return nil
 }
 
 func (s *UploaderService) authenticate(ctx echo.Context) (string, error) {
@@ -110,6 +141,14 @@ func (s *UploaderService) authenticate(ctx echo.Context) (string, error) {
 	}
 
 	return userID, nil
+}
+
+func (s *UploaderService) notifySplitter(streamID string, filepath string) error {
+	_, err := s.splitter.Split(context.Background(), &splitterv1.SplitRequest{StreamID: streamID, Filepath: filepath})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *UploaderService) getDestinationPath(filename string) (string, error) {
