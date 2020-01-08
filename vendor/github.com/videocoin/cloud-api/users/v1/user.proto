@@ -35,34 +35,6 @@ enum UserRole {
     USER_ROLE_SUPER   = 9 [(gogoproto.enumvalue_customname) = "UserRoleSuper"];
 }
 
-message User {
-    string id = 1 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(36);primary_key\""
-    ];
-    string email = 2 [
-        (gogoproto.moretags) = "gorm:\"unique_index\""
-    ];
-    string password = 3 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(100)\""
-    ];
-    string name = 4 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(100)\""
-    ];
-
-    UserRole role = 5;
-
-    bool is_active = 6;
-    google.protobuf.Timestamp activated_at = 7 [
-        (gogoproto.stdtime) = true
-    ];
-    google.protobuf.Timestamp created_at = 8 [
-        (gogoproto.stdtime) = true
-    ];
-    string token = 13 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(255);index\""
-    ];
-}
-
 message UserProfile {
     string id = 1;
     string email = 2;
@@ -70,26 +42,4 @@ message UserProfile {
     bool is_active = 4;
     cloud.api.account.v1.AccountProfile account = 5;
     UserRole role = 6;
-}
-
-message UserApiToken {
-    string id = 1 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(36);primary_key\""
-    ];
-
-    string user_id = 2 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(36)\""
-    ];
-
-    string name = 3 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(100)\""
-    ];
-
-    string token = 4 [
-        (gogoproto.moretags) = "gorm:\"type:varchar(255);index\""
-    ];
-
-    google.protobuf.Timestamp created_at = 5 [
-        (gogoproto.stdtime) = true
-    ];
 }
