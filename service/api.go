@@ -109,7 +109,6 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 	dstPath, err := s.getDestinationPath(file.Filename)
 	if err != nil {
 		s.logger.Errorf("failed to get destination path: %s", err)
-		s.ProcessErrCh <- err
 		return err
 	}
 
