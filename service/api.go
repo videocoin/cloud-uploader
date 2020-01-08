@@ -38,13 +38,17 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	err = s.validate(c, userID)
 	if err != nil {
+		s.logger.Warningf("failed to validate: %s", err)
 		return err
 	}
+
 	reqData := new(requestData)
 	err = c.Bind(reqData)
 	if err != nil {
+		s.logger.Errorf("failed to bind data: %s", err)
 		return err
 	}
 
@@ -72,57 +76,73 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 
 func (s *UploaderService) uploadFromFile(c echo.Context) error {
 	streamID := c.Param("id")
+
+	s.logger.Info("authentication")
+
 	userID, err := s.authenticate(c)
 	if err != nil {
+		s.logger.Warningf("failed to auth: %s", err)
 		return err
 	}
+
+	s.logger.Info("validating")
+
 	err = s.validate(c, userID)
 	if err != nil {
+		s.logger.Warningf("failed to validate: %s", err)
 		return err
 	}
 
 	file, err := c.FormFile("file")
-
 	if err != nil {
+		s.logger.Errorf("failed to form file: %s", err)
 		return err
 	}
+
 	src, err := file.Open()
 	if err != nil {
+		s.logger.Errorf("failed to file open: %s", err)
 		return err
 	}
 	defer src.Close()
 
 	dstPath, err := s.getDestinationPath(file.Filename)
 	if err != nil {
-		s.logger.Error(err)
+		s.logger.Errorf("failed to get destination path: %s", err)
 		s.ProcessErrCh <- err
 		return err
 	}
+
 	dst, err := os.Create(dstPath)
 	if err != nil {
+		s.logger.Errorf("failed to create file: %s", err)
 		return err
 	}
 	defer dst.Close()
+
+	s.logger.Info("uploading")
+
 	if _, err = io.Copy(dst, src); err != nil {
 		return err
 	}
+
+	s.logger.Info("send to split")
+
 	s.notifySplitter(streamID, dstPath)
+
 	return c.NoContent(http.StatusCreated)
 }
 
 func (s *UploaderService) validate(ctx echo.Context, userID string) error {
 	streamID := ctx.Param("id")
+
 	stream, err := s.streams.Get(context.Background(), &privatev1.StreamRequest{Id: streamID})
 	if err != nil {
 		return err
 	}
+
 	if stream.UserID != userID {
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
-	}
-
-	contentType := ctx.Request().Header.Get("Content-Type")
-	if contentType != MIMEVideoMP4 && contentType != MIMEVideoQuickTime {
-	 	return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
 	return nil
@@ -148,6 +168,7 @@ func (s *UploaderService) notifySplitter(streamID string, filepath string) error
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
