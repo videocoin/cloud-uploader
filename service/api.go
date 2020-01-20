@@ -120,22 +120,29 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 	}
 	defer dst.Close()
 
-	streamReq := &pstreamsv1.UpdateStatusRequest{ID: streamID, Status: streamsv1.StreamStatusUploading}
-	stream, err := s.streams.UpdateStatus(context.Background(), streamReq)
+	logger := s.logger.WithField("id", streamID)
+
+	req := &pstreamsv1.StreamRequest{Id: streamID}
+	streamResp, err := s.streams.Get(context.Background(), req)
 	if err != nil {
-		s.logger.Errorf("failed to update stream status: %s", err)
+		logger.Errorf("failed to get stream: %s", err)
 		return err
 	}
 
-	s.logger.Info("uploading")
+	if streamResp.Status != streamsv1.StreamStatusPrepared {
+		logger.Errorf("wrong stream status: %s", streamResp.Status.String())
+		return echo.NewHTTPError(http.StatusBadRequest, "Stream isn't prepeared")
+	}
+
+	logger.Info("uploading")
 
 	if _, err = io.Copy(dst, src); err != nil {
 		return err
 	}
 
-	s.logger.Info("send to split")
+	logger.Info("send to split")
 
-	s.notifySplitter(stream.ID, dstPath)
+	s.notifySplitter(streamResp.ID, dstPath)
 
 	return c.NoContent(http.StatusCreated)
 }
