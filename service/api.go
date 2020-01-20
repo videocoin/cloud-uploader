@@ -12,7 +12,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/opentracing/opentracing-go"
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
-	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
+	pstreamsv1 "github.com/videocoin/cloud-api/streams/private/v1"
+	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 )
 
 const (
@@ -119,6 +120,13 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 	}
 	defer dst.Close()
 
+	streamReq := &pstreamsv1.UpdateStatusRequest{ID: streamID, Status: streamsv1.StreamStatusUploading}
+	stream, err := s.streams.UpdateStatus(context.Background(), streamReq)
+	if err != nil {
+		s.logger.Errorf("failed to update stream status: %s", err)
+		return err
+	}
+
 	s.logger.Info("uploading")
 
 	if _, err = io.Copy(dst, src); err != nil {
@@ -127,7 +135,7 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 
 	s.logger.Info("send to split")
 
-	s.notifySplitter(streamID, dstPath)
+	s.notifySplitter(stream.ID, dstPath)
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -135,7 +143,7 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 func (s *UploaderService) validate(ctx echo.Context, userID string) error {
 	streamID := ctx.Param("id")
 
-	stream, err := s.streams.Get(context.Background(), &privatev1.StreamRequest{Id: streamID})
+	stream, err := s.streams.Get(context.Background(), &pstreamsv1.StreamRequest{Id: streamID})
 	if err != nil {
 		return err
 	}
