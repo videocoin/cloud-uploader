@@ -67,7 +67,10 @@ func (s *UploaderService) downloadBaseFile(streamID, urlStr, dstPath string) err
 	defer resp.Body.Close()
 
 	size, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
-	s.CreateMetadataRecord(streamID, int64(size), dstPath)
+	err = s.CreateMetadataRecord(streamID, int64(size), dstPath)
+	if err != nil {
+		return err
+	}
 
 	dst, err := os.Create(dstPath)
 	if err != nil {
@@ -75,12 +78,9 @@ func (s *UploaderService) downloadBaseFile(streamID, urlStr, dstPath string) err
 	}
 	defer dst.Close()
 
-	done := make(chan bool)
-
 	if _, err := io.Copy(dst, resp.Body); err != nil {
 		return err
 	}
-	done <- true
 
 	return nil
 }
