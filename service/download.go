@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	drive "google.golang.org/api/drive/v3"
@@ -21,7 +22,7 @@ var (
 	ErrFailedUpload               = errors.New("Failed to upload video from link. Check that the linked video exists and is publicly accessible.")
 )
 
-func (s *UploaderService) DownloadFromURL(urlStr string, dstPath string) error {
+func (s *UploaderService) DownloadFromURL(streamID, urlStr, dstPath string) error {
 
 	s.logger.Info("downloading file")
 
@@ -34,7 +35,7 @@ func (s *UploaderService) DownloadFromURL(urlStr string, dstPath string) error {
 
 	if strings.HasPrefix(u.Host, "drive.google") {
 		GDriveID, err := getGDriveFileID(urlStr)
-		err = s.downloadGdriveFile(GDriveID, dstPath)
+		err = s.downloadGdriveFile(streamID, GDriveID, dstPath)
 		if err != nil {
 			return err
 		}
@@ -47,7 +48,7 @@ func (s *UploaderService) DownloadFromURL(urlStr string, dstPath string) error {
 			urlStr = u.String()
 		}
 
-		err := s.downloadBaseFile(urlStr, dstPath)
+		err := s.downloadBaseFile(streamID, urlStr, dstPath)
 		if err != nil {
 			return err
 		}
@@ -58,12 +59,15 @@ func (s *UploaderService) DownloadFromURL(urlStr string, dstPath string) error {
 	return nil
 }
 
-func (s *UploaderService) downloadBaseFile(urlStr string, dstPath string) error {
+func (s *UploaderService) downloadBaseFile(streamID, urlStr, dstPath string) error {
 	resp, err := http.Get(urlStr)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
+	size, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
+	s.CreateMetadataRecord(streamID, int64(size), dstPath)
 
 	dst, err := os.Create(dstPath)
 	if err != nil {
@@ -81,13 +85,19 @@ func (s *UploaderService) downloadBaseFile(urlStr string, dstPath string) error 
 	return nil
 }
 
-func (s *UploaderService) downloadGdriveFile(gdriveId string, dstPath string) error {
+func (s *UploaderService) downloadGdriveFile(streamID, gdriveId, dstPath string) error {
 	srv, err := drive.New(&http.Client{
 		Transport: &transport.APIKey{Key: s.config.GDriveKey},
 	})
 	if err != nil {
 		return err
 	}
+
+	r, err := srv.Files.Get(gdriveId).Fields("id,name,mimeType,size,webContentLink").Do()
+	if err != nil {
+		return err
+	}
+	s.CreateMetadataRecord(streamID, int64(r.Size), dstPath)
 
 	resp, err := srv.Files.Get(gdriveId).Download()
 	if err != nil {

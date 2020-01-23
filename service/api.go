@@ -29,6 +29,10 @@ type localFile struct {
 	Path string `json:"path"`
 }
 
+type ProgressResponse struct {
+	Progress int32 `json:"progress"`
+}
+
 func (s *UploaderService) getHealth(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]bool{"alive": true})
 }
@@ -62,7 +66,7 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 	}
 
 	go func(url string, dstPath string) error {
-		err = s.DownloadFromURL(url, dstPath)
+		err = s.DownloadFromURL(streamID, url, dstPath)
 		if err != nil {
 			s.logger.Error(err)
 			s.ProcessErrCh <- err
@@ -73,6 +77,34 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 	}(reqData.URL, dstPath)
 
 	return c.NoContent(http.StatusCreated)
+}
+
+func (s *UploaderService) checkUploadFromURL(c echo.Context) error {
+	streamID := c.Param("id")
+	userID, err := s.authenticate(c)
+	if err != nil {
+		return err
+	}
+
+	err = s.validate(c, userID)
+	if err != nil {
+		s.logger.Warningf("failed to validate: %s", err)
+		return err
+	}
+	record, err := s.getMetadataRecord(streamID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, record)
+	}
+	fi, err := os.Stat(record.Path)
+	if err != nil {
+		return err
+	}
+	offset := fi.Size()
+
+	progressResponse := ProgressResponse{
+		Progress: int32(offset * 100 / record.Size),
+	}
+	return c.JSON(http.StatusOK, progressResponse)
 }
 
 func (s *UploaderService) uploadFromFile(c echo.Context) error {

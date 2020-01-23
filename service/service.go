@@ -8,6 +8,7 @@ import (
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/grpcutil"
+	"gopkg.in/redis.v5"
 	"net/http"
 	"os"
 )
@@ -16,6 +17,7 @@ type UploaderService struct {
 	config       *Config
 	logger       *logrus.Entry
 	api          *echo.Echo
+	cli          *redis.Client
 	users        usersv1.UserServiceClient
 	streams      privatev1.StreamsServiceClient
 	splitter     splitterv1.SplitterServiceClient
@@ -32,7 +34,25 @@ func NewService(
 
 	processErrCh := make(chan error, 10)
 
-	_, err := os.Stat(config.DownloadDir)
+	opts, err := redis.ParseURL(config.RedisURI)
+	if err != nil {
+		return nil, err
+	}
+
+	opts.MaxRetries = 3
+	opts.PoolSize = 10
+
+	cli := redis.NewClient(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cli.Ping().Err()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = os.Stat(config.DownloadDir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
@@ -65,6 +85,7 @@ func NewService(
 		config:       config,
 		logger:       config.Logger,
 		api:          api,
+		cli:          cli,
 		streams:      streams,
 		splitter:     splitter,
 		users:        users,
@@ -100,6 +121,7 @@ func (s *UploaderService) route() {
 	r.Use(middleware.JWT([]byte(s.config.AuthTokenSecret)))
 	r.POST("local/:id", s.uploadFromFile)
 	r.POST("url/:id", s.uploadFromURL)
+	r.GET("url/:id", s.checkUploadFromURL)
 }
 
 func (s *UploaderService) health(c echo.Context) error {

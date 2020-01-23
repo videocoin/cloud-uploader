@@ -52,6 +52,7 @@ function get_vars() {
     readonly USERS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/usersRpcAddr`
     readonly STREAMS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/streamsRpcAddr`
     readonly SPLITTER_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/splitterRpcAddr`
+    readonly REDIS_URI=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/redisUri`
     readonly FS_PATH=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/fsPath`
     readonly FS_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/fsAddr`
     readonly GDRIVE_KEY=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/gdriveKey`
@@ -71,6 +72,7 @@ function deploy() {
         --set config.splitterRpcAddr="${SPLITTER_RPC_ADDR}" \
         --set config.fsPath="${FS_PATH}" \
         --set config.fsAddr="${FS_ADDR}" \
+        --set secrets.redisUri="${REDIS_URI}" \
         --set secrets.gdriveKey="${GDRIVE_KEY}" \
         --set secrets.authTokenSecret="${AUTH_TOKEN_SECRET}" \
         --set secrets.sentryDsn="${SENTRY_DSN}" \
