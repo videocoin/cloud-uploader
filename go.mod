@@ -14,6 +14,7 @@ require (
 	github.com/videocoin/cloud-api v0.0.17
 	github.com/videocoin/cloud-pkg v0.0.6
 	google.golang.org/api v0.14.0
+	gopkg.in/redis.v5 v5.2.9
 )
 
 replace github.com/videocoin/cloud-pkg => ../cloud-pkg
