@@ -119,7 +119,7 @@ func (s *UploaderService) route() {
 
 	r := s.api.Group("/api/v1/upload/")
 	r.Use(middleware.JWT([]byte(s.config.AuthTokenSecret)))
-	r.POST("local/:id", s.uploadFromFile)
+	r.POST("file/:id", s.uploadFromFile)
 	r.POST("url/:id", s.uploadFromURL)
 	r.GET("url/:id", s.checkUploadFromURL)
 }
