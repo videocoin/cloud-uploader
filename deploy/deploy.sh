@@ -49,7 +49,6 @@ function has_helm {
 function get_vars() {
     log_info "Getting variables..."
     readonly KUBE_CONTEXT=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/common/kube_context`
-    readonly USERS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/usersRpcAddr`
     readonly STREAMS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/streamsRpcAddr`
     readonly SPLITTER_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/splitterRpcAddr`
     readonly REDIS_URI=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/redisUri`
@@ -67,7 +66,6 @@ function deploy() {
         --install \
         --timeout 60 \
         --set image.tag="${VERSION}" \
-        --set config.usersRpcAddr="${USERS_RPC_ADDR}" \
         --set config.streamsRpcAddr="${STREAMS_RPC_ADDR}" \
         --set config.splitterRpcAddr="${SPLITTER_RPC_ADDR}" \
         --set config.fsPath="${FS_PATH}" \

@@ -45,11 +45,6 @@ spec:
               value: 0.0.0.0:{{ .Values.service.internalHttpPort }}
             - name: DOWNLOAD_DIR
               value: "/data/studio/uploader"
-            - name: USERS_RPC_ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: usersRpcAddr
             - name: STREAMS_RPC_ADDR
               valueFrom:
                 configMapKeyRef:
