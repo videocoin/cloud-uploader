@@ -6,7 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
-	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"gopkg.in/redis.v5"
 	"net/http"
@@ -18,7 +17,6 @@ type UploaderService struct {
 	logger       *logrus.Entry
 	api          *echo.Echo
 	cli          *redis.Client
-	users        usersv1.UserServiceClient
 	streams      privatev1.StreamsServiceClient
 	splitter     splitterv1.SplitterServiceClient
 	ProcessErrCh chan error
@@ -63,13 +61,8 @@ func NewService(
 			return nil, err
 		}
 	}
-	conn, err := grpcutil.Connect(config.UsersRPCAddr, config.Logger.WithField("system", "userscli"))
-	if err != nil {
-		return nil, err
-	}
-	users := usersv1.NewUserServiceClient(conn)
 
-	conn, err = grpcutil.Connect(config.StreamsRPCAddr, config.Logger.WithField("system", "streamscli"))
+	conn, err := grpcutil.Connect(config.StreamsRPCAddr, config.Logger.WithField("system", "streamscli"))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +81,6 @@ func NewService(
 		cli:          cli,
 		streams:      streams,
 		splitter:     splitter,
-		users:        users,
 		ProcessErrCh: processErrCh,
 	}, nil
 }
