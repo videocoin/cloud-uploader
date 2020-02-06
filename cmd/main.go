@@ -7,6 +7,9 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sirupsen/logrus"
+	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
+	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
+	"github.com/videocoin/cloud-pkg/grpcutil"
 	"github.com/videocoin/cloud-pkg/logger"
 	"github.com/videocoin/cloud-pkg/tracer"
 	"github.com/videocoin/cloud-uploader/service"
@@ -33,19 +36,31 @@ func main() {
 		defer closer.Close()
 	}
 
-	cfg := &service.Config{
+	config := &service.Config{
 		Name:    ServiceName,
 		Version: Version,
 	}
 
-	err = envconfig.Process(ServiceName, cfg)
+	err = envconfig.Process(ServiceName, config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	cfg.Logger = log
+	config.Logger = log
 
-	svc, err := service.NewService(cfg)
+	conn, err := grpcutil.Connect(config.StreamsRPCAddr, config.Logger.WithField("system", "streamscli"))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	streams := privatev1.NewStreamsServiceClient(conn)
+
+	conn, err = grpcutil.Connect(config.SplitterRPCAddr, config.Logger.WithField("system", "splittercli"))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	splitter := splitterv1.NewSplitterServiceClient(conn)
+
+	svc, err := service.NewService(config, streams, splitter)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
