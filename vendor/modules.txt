@@ -4,6 +4,8 @@ cloud.google.com/go/compute/metadata
 github.com/beorn7/perks/quantile
 # github.com/certifi/gocertifi v0.0.0-20190506164543-d2eda7129713
 github.com/certifi/gocertifi
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
 # github.com/evalphobia/logrus_sentry v0.8.2
@@ -13,22 +15,22 @@ github.com/getsentry/raven-go
 # github.com/gogo/googleapis v1.3.0
 github.com/gogo/googleapis/google/api
 # github.com/gogo/protobuf v1.3.1
+github.com/gogo/protobuf/types
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
-github.com/gogo/protobuf/types
-github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
+github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes/any
-github.com/golang/protobuf/ptypes/struct
-github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
+github.com/golang/protobuf/ptypes/struct
 # github.com/google/uuid v1.0.0
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
@@ -40,6 +42,7 @@ github.com/grpc-ecosystem/go-grpc-middleware/retry
 github.com/grpc-ecosystem/go-grpc-middleware/tags
 github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing
 github.com/grpc-ecosystem/go-grpc-middleware/validator
+github.com/grpc-ecosystem/go-grpc-middleware/auth
 github.com/grpc-ecosystem/go-grpc-middleware/logging
 github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus
 github.com/grpc-ecosystem/go-grpc-middleware/tags/logrus
@@ -48,8 +51,8 @@ github.com/grpc-ecosystem/go-grpc-middleware/util/metautils
 # github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 github.com/grpc-ecosystem/go-grpc-prometheus
 # github.com/grpc-ecosystem/grpc-gateway v1.11.3
-github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options
 github.com/grpc-ecosystem/grpc-gateway/runtime
+github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options
 github.com/grpc-ecosystem/grpc-gateway/utilities
 github.com/grpc-ecosystem/grpc-gateway/internal
 # github.com/hashicorp/golang-lru v0.5.1
@@ -78,6 +81,8 @@ github.com/opentracing/opentracing-go/ext
 github.com/opentracing/opentracing-go/log
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/prometheus/client_golang v0.9.4
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -94,6 +99,10 @@ github.com/prometheus/procfs/internal/fs
 github.com/sirupsen/logrus
 # github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 github.com/streadway/amqp
+# github.com/stretchr/testify v1.4.0
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
 # github.com/uber/jaeger-client-go v2.16.0+incompatible
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-client-go/config
@@ -121,15 +130,16 @@ github.com/valyala/fasttemplate
 # github.com/videocoin/cloud-api v0.0.17 => ../cloud-api
 github.com/videocoin/cloud-api/splitter/v1
 github.com/videocoin/cloud-api/streams/private/v1
-github.com/videocoin/cloud-api/streams/v1
 github.com/videocoin/cloud-api/users/v1
+github.com/videocoin/cloud-api/streams/v1
+github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/accounts/v1
 github.com/videocoin/cloud-api/transfers/v1
-github.com/videocoin/cloud-api/rpc
 # github.com/videocoin/cloud-pkg v0.0.6 => ../cloud-pkg
+github.com/videocoin/cloud-pkg/grpcutil
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/tracer
-github.com/videocoin/cloud-pkg/grpcutil
+github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/mqmux
 # go.opencensus.io v0.21.0
 go.opencensus.io/plugin/ochttp
@@ -238,3 +248,5 @@ gopkg.in/redis.v5/internal/consistenthash
 gopkg.in/redis.v5/internal/hashtag
 gopkg.in/redis.v5/internal/pool
 gopkg.in/redis.v5/internal/proto
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
