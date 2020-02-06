@@ -6,7 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
-	"github.com/videocoin/cloud-pkg/grpcutil"
 	"gopkg.in/redis.v5"
 	"net/http"
 	"os"
@@ -24,6 +23,8 @@ type UploaderService struct {
 
 func NewService(
 	config *Config,
+	streams privatev1.StreamsServiceClient,
+	splitter splitterv1.SplitterServiceClient,
 ) (*UploaderService, error) {
 	api := echo.New()
 	api.HideBanner = true
@@ -61,18 +62,6 @@ func NewService(
 			return nil, err
 		}
 	}
-
-	conn, err := grpcutil.Connect(config.StreamsRPCAddr, config.Logger.WithField("system", "streamscli"))
-	if err != nil {
-		return nil, err
-	}
-	streams := privatev1.NewStreamsServiceClient(conn)
-
-	conn, err = grpcutil.Connect(config.SplitterRPCAddr, config.Logger.WithField("system", "splittercli"))
-	if err != nil {
-		return nil, err
-	}
-	splitter := splitterv1.NewSplitterServiceClient(conn)
 
 	return &UploaderService{
 		config:       config,

@@ -26,6 +26,13 @@ build:
 deps:
 	GO111MODULE=on go mod vendor
 
+test:
+	GO111MODULE=on go test
+
+test-integration:
+	go test -v -tags=integration ./...
+
+
 docker-build:
 	docker build -t gcr.io/${GCP_PROJECT}/${NAME}:${VERSION} -f Dockerfile .
 
