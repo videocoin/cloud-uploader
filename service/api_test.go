@@ -3,9 +3,13 @@
 package service
 
 import (
+	"io"
+	"os"
 	"fmt"
+	"bytes"
 	"strings"
 	"testing"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 
@@ -55,6 +59,39 @@ func (suite *APITestSuite) SetupSuite() {
 
 func TestAPITestSuite(t *testing.T) {
 	suite.Run(t, new(APITestSuite))
+}
+
+func (suite *APITestSuite) TestUpload_FromFile() {
+	filepath := "testdata/small.mp4"
+	file, err := os.Open(filepath)
+	defer file.Close()
+	var buffer bytes.Buffer
+	writer := multipart.NewWriter(&buffer)
+	part, err := writer.CreateFormFile("file", "small.mp4")
+	if err != nil {
+		assert.FailNow(suite.T(), err.Error())
+	}
+
+	size, err := io.Copy(part, file)
+	if err != nil {
+		assert.FailNow(suite.T(), err.Error())
+	}
+	fmt.Fprintf(os.Stdout, "Copied %v bytes for uploading...\n", size)
+	writer.Close()
+	req := httptest.NewRequest(echo.POST, fmt.Sprintf("/api/v1/upload/local/%s", mock.STREAM_ID), &buffer)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", mock.GetAuthToken(suite.svc.config.AuthTokenSecret)))
+	rec := httptest.NewRecorder()
+	suite.svc.api.ServeHTTP(rec, req)
+	resp := rec.Result()
+
+	if err != nil {
+		assert.FailNow(suite.T(), err.Error())
+	}
+
+	assert.Equal(suite.T(), http.StatusCreated, resp.StatusCode)
+	assert.Empty(suite.T(), rec.Body.String())
+
 }
 
 func (suite *APITestSuite) TestUpload_FromURL_WithGeneralURL() {

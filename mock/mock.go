@@ -6,6 +6,7 @@ import (
 	types "github.com/gogo/protobuf/types"
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	pstreamsv1 "github.com/videocoin/cloud-api/streams/private/v1"
+	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/auth"
 	"google.golang.org/grpc"
@@ -42,6 +43,7 @@ func (sm *MockPrivateStreamManager) Get(
 	stream := pstreamsv1.StreamResponse{
 		ID:     sm.id,
 		UserID: USER_ID,
+		Status: streamsv1.StreamStatusPrepared,
 	}
 	return &stream, nil
 }
