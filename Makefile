@@ -26,12 +26,14 @@ build:
 deps:
 	GO111MODULE=on go mod vendor
 
-test:
-	GO111MODULE=on go test
-
 test-integration:
 	go test -v -tags=integration ./...
 
+docker-test-build:
+	docker build -t tests -f Dockerfile.test .
+
+docker-test-run:
+	docker run --net=host -e "GDRIVE_KEY=${GDRIVE_KEY}" -e "AUTH_TOKEN_SECRET=${AUTH_TOKEN_SECRET}" tests make test-integration
 
 docker-build:
 	docker build -t gcr.io/${GCP_PROJECT}/${NAME}:${VERSION} -f Dockerfile .
