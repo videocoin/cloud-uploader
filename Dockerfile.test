@@ -1,0 +1,7 @@
+FROM golang:1.12.4 as builder
+
+ARG GDRIVE_KEY
+ARG AUTH_TOKEN_SECRET
+
+WORKDIR /go/src/github.com/videocoin/cloud-uploader
+COPY . .

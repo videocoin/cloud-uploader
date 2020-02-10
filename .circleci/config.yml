@@ -38,6 +38,26 @@ defaults: &defaults
 
 version: 2
 jobs:
+  test:
+    <<: *defaults
+    steps:
+      - *restore_repo
+      - checkout
+      - setup_remote_docker:
+          <<: *setup_remote_docker
+      - run:
+          <<: *docker_login
+      - run:
+          name: test
+          command: |
+            docker run -d -p 6379:6379 --name=redis redis
+            timeout -t 10 bash .circleci/wait-redis.sh
+            make docker-test-build
+            make docker-test-run
+      - save_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
   build:
     <<: *defaults
     steps:
@@ -76,7 +96,9 @@ workflows:
   build-n-deploy:
     jobs:
       - test
-      - build
+      - build:
+          requires:
+            - test
       - deploy:
           requires:
             - build
