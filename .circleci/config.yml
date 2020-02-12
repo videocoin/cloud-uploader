@@ -58,6 +58,23 @@ jobs:
           key: v1-repo-{{ .Branch }}-{{ .Revision }}
           paths:
             - .
+  lint:
+    <<: *defaults
+    steps:
+      - *restore_repo
+      - checkout
+      - setup_remote_docker:
+          <<: *setup_remote_docker
+      - run:
+          <<: *docker_login
+      - run:
+          name: lint
+          command: |
+            make docker-lint
+      - save_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
   build:
     <<: *defaults
     steps:
@@ -96,9 +113,11 @@ workflows:
   build-n-deploy:
     jobs:
       - test
+      - lint
       - build:
           requires:
             - test
+            - lint
       - deploy:
           requires:
             - build

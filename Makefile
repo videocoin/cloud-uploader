@@ -26,6 +26,12 @@ build:
 deps:
 	GO111MODULE=on go mod vendor
 
+lint:
+	golangci-lint run -v
+
+docker-lint:
+	docker build -f Dockerfile.lint .
+
 test-integration:
 	go test -v -tags=integration ./...
 
@@ -36,6 +42,9 @@ docker-test-run:
 	docker run --net=host -e "GDRIVE_KEY=${GDRIVE_KEY}" -e "AUTH_TOKEN_SECRET=${AUTH_TOKEN_SECRET}" tests make test-integration
 
 docker-build:
+	@ if [ "${CI}" = "" ]; then \
+        make lint; \
+    fi
 	docker build -t gcr.io/${GCP_PROJECT}/${NAME}:${VERSION} -f Dockerfile .
 
 docker-push:
