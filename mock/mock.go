@@ -93,9 +93,7 @@ func (sm *MockPrivateStreamManager) UpdateStatus(
 	return &stream, nil
 }
 
-type MockSplitterManager struct {
-	id string
-}
+type MockSplitterManager struct {}
 
 func (sm *MockSplitterManager) Split(
 	context.Context, *splitterv1.SplitRequest, ...grpc.CallOption,

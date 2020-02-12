@@ -35,6 +35,9 @@ func (s *UploaderService) DownloadFromURL(streamID, urlStr, dstPath string) erro
 
 	if strings.HasPrefix(u.Host, "drive.google") {
 		GDriveID, err := getGDriveFileID(urlStr)
+		if err != nil {
+			return err
+		}
 		err = s.downloadGdriveFile(streamID, GDriveID, dstPath)
 		if err != nil {
 			return err
@@ -86,7 +89,7 @@ func (s *UploaderService) downloadBaseFile(streamID, urlStr, dstPath string) err
 }
 
 func (s *UploaderService) downloadGdriveFile(streamID, gdriveId, dstPath string) error {
-	srv, err := drive.New(&http.Client{
+	srv, err := drive.New(&http.Client{  //nolint
 		Transport: &transport.APIKey{Key: s.config.GDriveKey},
 	})
 	if err != nil {
@@ -97,7 +100,11 @@ func (s *UploaderService) downloadGdriveFile(streamID, gdriveId, dstPath string)
 	if err != nil {
 		return err
 	}
-	s.CreateMetadataRecord(streamID, int64(r.Size), dstPath)
+
+	err = s.CreateMetadataRecord(streamID, int64(r.Size), dstPath)
+	if err != nil {
+		return err
+	}
 
 	resp, err := srv.Files.Get(gdriveId).Download()
 	if err != nil {

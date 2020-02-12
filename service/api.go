@@ -25,10 +25,6 @@ type requestData struct {
 	URL string `json:"url"`
 }
 
-type localFile struct {
-	Path string `json:"path"`
-}
-
 type ProgressResponse struct {
 	Progress int32 `json:"progress"`
 }
@@ -65,15 +61,17 @@ func (s *UploaderService) uploadFromURL(c echo.Context) error {
 		return err
 	}
 
-	go func(url string, dstPath string) error {
+	go func(url string, dstPath string) {
 		err = s.DownloadFromURL(streamID, url, dstPath)
 		if err != nil {
 			s.logger.Error(err)
 			s.ProcessErrCh <- err
-			return err
 		}
-		s.notifySplitter(streamID, dstPath)
-		return nil
+		err = s.notifySplitter(streamID, dstPath)
+		if err != nil {
+			s.logger.Error(err)
+			s.ProcessErrCh <- err
+		}
 	}(reqData.URL, dstPath)
 
 	return c.NoContent(http.StatusCreated)
@@ -174,8 +172,10 @@ func (s *UploaderService) uploadFromFile(c echo.Context) error {
 
 	logger.Info("send to split")
 
-	s.notifySplitter(streamResp.ID, dstPath)
-
+	err = s.notifySplitter(streamResp.ID, dstPath)
+	if err != nil {
+		return err
+	}
 	return c.NoContent(http.StatusCreated)
 }
 

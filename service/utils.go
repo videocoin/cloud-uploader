@@ -10,7 +10,7 @@ func getFilenameFromURL(urlStr string) string {
 	_, filename := filepath.Split(urlStr)
 	s1 := strings.Split(filename, "?")
 	s2 := strings.Split(s1[0], ".")
-	s3, _ := url.PathUnescape(strings.Join(s2[:len(s2)], "."))
+	s3, _ := url.PathUnescape(strings.Join(s2, "."))
 	return s3
 }
 

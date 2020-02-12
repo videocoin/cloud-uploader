@@ -31,23 +31,19 @@ func (s *UploaderService) CreateMetadataRecord(id string, size int64, path strin
 	return nil
 }
 
+
+
+
 func (s *UploaderService) getMetadataRecord(id string) (*Record, error) {
 	record := new(Record)
-	recordRaw, err := s.cli.Get(id).Result()
-
-	err = json.Unmarshal([]byte(recordRaw), record)
+	record_raw, err := s.cli.Get(id).Result()
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(record_raw), record)
 	if err != nil {
 		return nil, err
 	}
 
 	return record, nil
-}
-
-func (s *UploaderService) clearMetadataRecord(id string) error {
-	_, err := s.cli.Del(id).Result()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

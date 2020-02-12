@@ -7,7 +7,6 @@ import (
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	"gopkg.in/redis.v5"
-	"net/http"
 	"os"
 )
 
@@ -79,7 +78,7 @@ func (s *UploaderService) Start() error {
 
 	s.route()
 
-	go s.api.Start(s.config.Addr)
+	go s.logger.Fatal(s.api.Start(s.config.Addr))
 	go func() {
 		for err := range s.ProcessErrCh {
 			if err != nil {
@@ -103,8 +102,4 @@ func (s *UploaderService) route() {
 	r.POST("local/:id", s.uploadFromFile)
 	r.POST("url/:id", s.uploadFromURL)
 	r.GET("url/:id", s.checkUploadFromURL)
-}
-
-func (s *UploaderService) health(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{"alive": "OK"})
 }
