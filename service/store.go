@@ -5,7 +5,7 @@ import (
 )
 
 type Record struct {
-	Id   string
+	ID   string
 	Size int64
 	Path string
 }
@@ -14,7 +14,7 @@ func (s *UploaderService) CreateMetadataRecord(id string, size int64, path strin
 
 	s.logger.Info("create metadata record")
 	record := Record{
-		Id:   id,
+		ID:   id,
 		Size: size,
 		Path: path,
 	}
@@ -31,16 +31,13 @@ func (s *UploaderService) CreateMetadataRecord(id string, size int64, path strin
 	return nil
 }
 
-
-
-
 func (s *UploaderService) getMetadataRecord(id string) (*Record, error) {
 	record := new(Record)
-	record_raw, err := s.cli.Get(id).Result()
+	recordRaw, err := s.cli.Get(id).Result()
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal([]byte(record_raw), record)
+	err = json.Unmarshal([]byte(recordRaw), record)
 	if err != nil {
 		return nil, err
 	}

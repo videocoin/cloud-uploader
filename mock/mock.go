@@ -2,6 +2,8 @@ package mock
 
 import (
 	"context"
+	"time"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	types "github.com/gogo/protobuf/types"
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
@@ -10,17 +12,16 @@ import (
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/auth"
 	"google.golang.org/grpc"
-	"time"
 )
 
-const USER_ID = "12b1876f-341f-41b0-833f-5312f1e9c308"
-const STREAM_ID = "cdc1816b-0be8-44a6-80c3-3e43fbd441ee"
+const UserID = "12b1876f-341f-41b0-833f-5312f1e9c308"
+const StreamID = "cdc1816b-0be8-44a6-80c3-3e43fbd441ee"
 
 func GetAuthToken(authTokenSecret string) string {
 	claims := auth.ExtendedClaims{
 		Type: auth.TokenType(usersv1.TokenTypeRegular),
 		StandardClaims: jwt.StandardClaims{
-			Subject:   USER_ID,
+			Subject:   UserID,
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
 	}
@@ -33,22 +34,22 @@ func GetAuthToken(authTokenSecret string) string {
 	return st
 }
 
-type MockPrivateStreamManager struct {
+type PrivateStreamManager struct {
 	id string
 }
 
-func (sm *MockPrivateStreamManager) Get(
+func (sm *PrivateStreamManager) Get(
 	context.Context, *pstreamsv1.StreamRequest, ...grpc.CallOption,
 ) (*pstreamsv1.StreamResponse, error) {
 	stream := pstreamsv1.StreamResponse{
 		ID:     sm.id,
-		UserID: USER_ID,
+		UserID: UserID,
 		Status: streamsv1.StreamStatusPrepared,
 	}
 	return &stream, nil
 }
 
-func (sm *MockPrivateStreamManager) Publish(
+func (sm *PrivateStreamManager) Publish(
 	context.Context, *pstreamsv1.StreamRequest, ...grpc.CallOption,
 ) (*pstreamsv1.StreamResponse, error) {
 	stream := pstreamsv1.StreamResponse{
@@ -57,7 +58,7 @@ func (sm *MockPrivateStreamManager) Publish(
 	return &stream, nil
 }
 
-func (sm *MockPrivateStreamManager) PublishDone(
+func (sm *PrivateStreamManager) PublishDone(
 	context.Context, *pstreamsv1.StreamRequest, ...grpc.CallOption,
 ) (*pstreamsv1.StreamResponse, error) {
 	stream := pstreamsv1.StreamResponse{
@@ -66,7 +67,7 @@ func (sm *MockPrivateStreamManager) PublishDone(
 	return &stream, nil
 }
 
-func (sm *MockPrivateStreamManager) Run(
+func (sm *PrivateStreamManager) Run(
 	context.Context, *pstreamsv1.StreamRequest, ...grpc.CallOption,
 ) (*pstreamsv1.StreamResponse, error) {
 	stream := pstreamsv1.StreamResponse{
@@ -75,7 +76,7 @@ func (sm *MockPrivateStreamManager) Run(
 	return &stream, nil
 }
 
-func (sm *MockPrivateStreamManager) Stop(
+func (sm *PrivateStreamManager) Stop(
 	context.Context, *pstreamsv1.StreamRequest, ...grpc.CallOption,
 ) (*pstreamsv1.StreamResponse, error) {
 	stream := pstreamsv1.StreamResponse{
@@ -84,7 +85,7 @@ func (sm *MockPrivateStreamManager) Stop(
 	return &stream, nil
 }
 
-func (sm *MockPrivateStreamManager) UpdateStatus(
+func (sm *PrivateStreamManager) UpdateStatus(
 	context.Context, *pstreamsv1.UpdateStatusRequest, ...grpc.CallOption,
 ) (*pstreamsv1.StreamResponse, error) {
 	stream := pstreamsv1.StreamResponse{
@@ -93,9 +94,9 @@ func (sm *MockPrivateStreamManager) UpdateStatus(
 	return &stream, nil
 }
 
-type MockSplitterManager struct {}
+type SplitterManager struct{}
 
-func (sm *MockSplitterManager) Split(
+func (sm *SplitterManager) Split(
 	context.Context, *splitterv1.SplitRequest, ...grpc.CallOption,
 ) (*types.Empty, error) {
 	return nil, nil

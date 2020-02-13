@@ -3,15 +3,15 @@
 package service
 
 import (
-	"io"
-	"os"
-	"fmt"
 	"bytes"
-	"strings"
-	"testing"
+	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
+	"testing"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo"
@@ -48,8 +48,8 @@ func (suite *APITestSuite) SetupSuite() {
 	}
 
 	config.Logger = log
-	privateStreamManager := new(mock.MockPrivateStreamManager)
-	splitterManager := new(mock.MockSplitterManager)
+	privateStreamManager := new(mock.PrivateStreamManager)
+	splitterManager := new(mock.SplitterManager)
 	suite.svc, err = NewService(config, privateStreamManager, splitterManager)
 	require.NoError(suite.T(), err)
 
@@ -78,7 +78,7 @@ func (suite *APITestSuite) TestUpload_FromFile() {
 	}
 	fmt.Fprintf(os.Stdout, "Copied %v bytes for uploading...\n", size)
 	writer.Close()
-	req := httptest.NewRequest(echo.POST, fmt.Sprintf("/api/v1/upload/local/%s", mock.STREAM_ID), &buffer)
+	req := httptest.NewRequest(echo.POST, fmt.Sprintf("/api/v1/upload/local/%s", mock.StreamID), &buffer)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", mock.GetAuthToken(suite.svc.config.AuthTokenSecret)))
 	rec := httptest.NewRecorder()
@@ -111,7 +111,7 @@ func (suite *APITestSuite) TestUpload_FromURL_WithGDriveURL() {
 
 func testUploadFromURL(requestJSON string, suite *APITestSuite) {
 	body := strings.NewReader(requestJSON)
-	req := httptest.NewRequest(echo.POST, fmt.Sprintf("/api/v1/upload/url/%s", mock.STREAM_ID), body)
+	req := httptest.NewRequest(echo.POST, fmt.Sprintf("/api/v1/upload/url/%s", mock.StreamID), body)
 
 	testSetupRequestHeader(req, mock.GetAuthToken(suite.svc.config.AuthTokenSecret))
 

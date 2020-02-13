@@ -21,7 +21,7 @@ var (
 )
 
 func main() {
-	logger.Init(ServiceName, Version)  //nolint
+	logger.Init(ServiceName, Version) //nolint
 
 	log := logrus.NewEntry(logrus.New())
 	log = logrus.WithFields(logrus.Fields{
@@ -78,7 +78,7 @@ func main() {
 	}()
 
 	log.Info("starting")
-	go log.Fatal( svc.Start())
+	go log.Fatal(svc.Start())
 
 	<-exit
 

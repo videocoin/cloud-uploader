@@ -18,3 +18,12 @@ linters:
     - ineffassign
     - deadcode
     - typecheck
+    - gofmt
+    - goimports
+    - gocyclo
+    - golint
+    - goconst
+    - unconvert
+    - unparam
+    - ineffassign
+    - scopelint

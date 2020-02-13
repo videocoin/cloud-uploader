@@ -1,13 +1,14 @@
 package service
 
 import (
+	"os"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/sirupsen/logrus"
 	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	"gopkg.in/redis.v5"
-	"os"
 )
 
 type UploaderService struct {

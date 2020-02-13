@@ -19,7 +19,7 @@ var (
 	ErrInvalidVideoSize           = errors.New("Invalid video file size")
 	ErrInvalidGDriveURL           = errors.New("Invalid Google Drive URL")
 	ErrUnsupportedVideotypeFormat = errors.New("Unsupported stereo type")
-	ErrFailedUpload               = errors.New("Failed to upload video from link. Check that the linked video exists and is publicly accessible.")
+	ErrFailedUpload               = errors.New("Failed to upload video from link. Check that the linked video exists and is publicly accessible")
 )
 
 func (s *UploaderService) DownloadFromURL(streamID, urlStr, dstPath string) error {
@@ -34,11 +34,11 @@ func (s *UploaderService) DownloadFromURL(streamID, urlStr, dstPath string) erro
 	q := u.Query()
 
 	if strings.HasPrefix(u.Host, "drive.google") {
-		GDriveID, err := getGDriveFileID(urlStr)
+		gdriveID, err := getGDriveFileID(urlStr)
 		if err != nil {
 			return err
 		}
-		err = s.downloadGdriveFile(streamID, GDriveID, dstPath)
+		err = s.downloadGdriveFile(streamID, gdriveID, dstPath)
 		if err != nil {
 			return err
 		}
@@ -88,25 +88,25 @@ func (s *UploaderService) downloadBaseFile(streamID, urlStr, dstPath string) err
 	return nil
 }
 
-func (s *UploaderService) downloadGdriveFile(streamID, gdriveId, dstPath string) error {
-	srv, err := drive.New(&http.Client{  //nolint
+func (s *UploaderService) downloadGdriveFile(streamID, gdriveID, dstPath string) error {
+	srv, err := drive.New(&http.Client{ //nolint
 		Transport: &transport.APIKey{Key: s.config.GDriveKey},
 	})
 	if err != nil {
 		return err
 	}
 
-	r, err := srv.Files.Get(gdriveId).Fields("id,name,mimeType,size,webContentLink").Do()
+	r, err := srv.Files.Get(gdriveID).Fields("id,name,mimeType,size,webContentLink").Do()
 	if err != nil {
 		return err
 	}
 
-	err = s.CreateMetadataRecord(streamID, int64(r.Size), dstPath)
+	err = s.CreateMetadataRecord(streamID, r.Size, dstPath)
 	if err != nil {
 		return err
 	}
 
-	resp, err := srv.Files.Get(gdriveId).Download()
+	resp, err := srv.Files.Get(gdriveID).Download()
 	if err != nil {
 		return err
 	}
