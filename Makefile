@@ -53,4 +53,4 @@ dbm-down:
 release: docker-build docker-push
 
 deploy:
-	ENV=${ENV} deploy/deploy.sh
+	ENV=${ENV} GCP_PROJECT=${GCP_PROJECT} deploy/deploy.sh
