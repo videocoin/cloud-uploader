@@ -74,21 +74,22 @@ func NewService(
 	}, nil
 }
 
-func (s *UploaderService) Start() error {
+func (s *UploaderService) Start(errCh chan error) {
 	s.logger.Infof("starting api server on %s", s.config.Addr)
 
 	s.route()
 
-	go s.logger.Fatal(s.api.Start(s.config.Addr))
+	go func() {
+		errCh <- s.api.Start(s.config.Addr)
+	}()
+
 	go func() {
 		for err := range s.ProcessErrCh {
 			if err != nil {
-				s.logger.Error(err)
+				errCh <- err
 			}
 		}
 	}()
-
-	return nil
 }
 
 func (s *UploaderService) Stop() error {
