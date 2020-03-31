@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 	"strings"
 
 	drive "google.golang.org/api/drive/v3"
-	"google.golang.org/api/googleapi/transport"
+	"google.golang.org/api/option"
 )
 
 var (
@@ -89,9 +90,8 @@ func (s *UploaderService) downloadBaseFile(streamID, urlStr, dstPath string) err
 }
 
 func (s *UploaderService) downloadGdriveFile(streamID, gdriveID, dstPath string) error {
-	srv, err := drive.New(&http.Client{ //nolint
-		Transport: &transport.APIKey{Key: s.config.GDriveKey},
-	})
+	ctx := context.Background()
+	srv, err := drive.NewService(ctx, option.WithAPIKey(s.config.GDriveKey))
 	if err != nil {
 		return err
 	}
