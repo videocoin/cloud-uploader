@@ -27,8 +27,7 @@ build:
 deps:
 	GO111MODULE=on go mod vendor
 
-lint:
-	golangci-lint run -v --timeout 120s
+lint: docker-lint
 
 docker-lint:
 	docker build -f Dockerfile.lint .
