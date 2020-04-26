@@ -1,16 +1,14 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/sirupsen/logrus"
-	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
-	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
-	"github.com/videocoin/cloud-pkg/grpcutil"
-	"github.com/videocoin/cloud-pkg/logger"
+	pkglogger "github.com/videocoin/cloud-pkg/logger"
 	"github.com/videocoin/cloud-pkg/tracer"
 	"github.com/videocoin/cloud-uploader/service"
 )
@@ -21,48 +19,29 @@ var (
 )
 
 func main() {
-	logger.Init(ServiceName, Version)
-
-	log := logrus.NewEntry(logrus.New())
-	log = logrus.WithFields(logrus.Fields{
-		"service": ServiceName,
-		"version": Version,
-	})
+	logger := pkglogger.NewLogrusLogger(ServiceName, Version)
 
 	closer, err := tracer.NewTracer(ServiceName)
 	if err != nil {
-		log.Info(err.Error())
+		logger.WithError(err).Info("failed to new tracer")
 	} else {
 		defer closer.Close()
 	}
 
-	config := &service.Config{
+	cfg := &service.Config{
 		Name:    ServiceName,
 		Version: Version,
 	}
 
-	err = envconfig.Process(ServiceName, config)
+	err = envconfig.Process(ServiceName, cfg)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.WithError(err).Fatal("failed to process config")
 	}
 
-	config.Logger = log
-
-	conn, err := grpcutil.Connect(config.StreamsRPCAddr, config.Logger.WithField("system", "streamscli"))
+	ctx := ctxlogrus.ToContext(context.Background(), logger)
+	svc, err := service.NewService(ctx, cfg)
 	if err != nil {
-		log.Fatal(err.Error())
-	}
-	streams := privatev1.NewStreamsServiceClient(conn)
-
-	conn, err = grpcutil.Connect(config.SplitterRPCAddr, config.Logger.WithField("system", "splittercli"))
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	splitter := splitterv1.NewSplitterServiceClient(conn)
-
-	svc, err := service.NewService(config, streams, splitter)
-	if err != nil {
-		log.Fatal(err.Error())
+		logger.WithError(err).Fatal("failed to create service")
 	}
 
 	signals := make(chan os.Signal, 1)
@@ -74,11 +53,11 @@ func main() {
 	go func() {
 		sig := <-signals
 
-		log.Infof("recieved signal %s", sig)
+		logger.WithField("signal", sig.String()).Infof("recieved signal")
 		exit <- true
 	}()
 
-	log.Info("starting")
+	logger.Info("starting")
 	go svc.Start(errCh)
 
 	select {
@@ -86,17 +65,17 @@ func main() {
 		break
 	case err := <-errCh:
 		if err != nil {
-			log.Error(err)
+			logger.WithError(err).Error("failed to start service")
 		}
 		break
 	}
 
-	log.Info("stopping")
+	logger.Info("stopping")
 	err = svc.Stop()
 	if err != nil {
-		log.Error(err)
+		logger.WithError(err).Error("failed to stop service")
 		return
 	}
 
-	log.Info("stopped")
+	logger.Info("stopped")
 }

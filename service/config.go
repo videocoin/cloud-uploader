@@ -1,22 +1,15 @@
 package service
 
-import (
-	"github.com/sirupsen/logrus"
-)
-
 type Config struct {
 	Name    string `envconfig:"-"`
 	Version string `envconfig:"-"`
 
-	Addr            string `required:"true" default:"0.0.0.0:8090" envconfig:"ADDR"`
-	StreamsRPCAddr  string `required:"true" envconfig:"STREAMS_RPC_ADDR" default:"127.0.0.1:5102"`
-	SplitterRPCAddr string `required:"true" envconfig:"SPLITTER_RPC_ADDR" default:"127.0.0.1:5103"`
-	RedisURI        string `default:"redis://:@127.0.0.1:6379/1" envconfig:"REDISURI"`
-	DownloadDir     string `required:"true" default:"/tmp" envconfig:"DOWNLOAD_DIR"`
+	Addr            string `envconfig:"ADDR" default:"0.0.0.0:8090"`
+	StreamsRPCAddr  string `envconfig:"STREAMS_RPC_ADDR" default:"127.0.0.1:5102"`
+	SplitterRPCAddr string `envconfig:"SPLITTER_RPC_ADDR" default:"127.0.0.1:5103"`
+	RedisURI        string `envconfig:"REDISURI" default:"redis://:@127.0.0.1:6379/1"`
+	DownloadDir     string `envconfig:"DOWNLOAD_DIR" default:"/tmp"`
 	EnableCORS      bool   `default:"true"`
-	GDriveKey       string `required:"true" envconfig:"GDRIVE_KEY"`
-
-	AuthTokenSecret string `required:"true" envconfig:"AUTH_TOKEN_SECRET"`
-
-	Logger *logrus.Entry `envconfig:"-"`
+	GDriveKey       string `envconfig:"GDRIVE_KEY" required:"true"`
+	AuthTokenSecret string `envconfig:"AUTH_TOKEN_SECRET" default:"secret"`
 }

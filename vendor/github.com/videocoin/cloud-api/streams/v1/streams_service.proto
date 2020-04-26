@@ -209,12 +209,21 @@ message StreamResponse {
     }
 	};
 
-  string id = 1 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "ID that VideoCoin uses to uniquely identify each stream"}];
+  string id = 1 [
+    (grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "ID that VideoCoin uses to uniquely identify each stream"},
+    (gogoproto.customname) = "ID"
+  ];
   string name = 2 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Name of the stream"}];
 
-  string output_url = 5 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Unique output URL of transcoded video"}];
+  string output_url = 5 [
+    (grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Unique output URL of transcoded video"},
+    (gogoproto.customname) = "OutputURL"
+  ];
 
-  uint64 stream_contract_id = 7 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Stream ID in VideoCoin stream chain"}];
+  uint64 stream_contract_id = 7 [
+    (grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Stream ID in VideoCoin stream chain"},
+    (gogoproto.customname) = "StreamContractID"
+  ];
   string stream_contract_address = 8 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Stream hex address in VideoCoin chain. Empty until stream is in prepared state"}];
 
   StreamStatus status = 9 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Status of the stream\'s operational state"}];
@@ -240,21 +249,25 @@ message StreamResponse {
     (grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Date and time of when stream was called to stop. This field will be null until stream is in completed state"}
   ];
 
-  string rtmp_url = 14 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Unique ingest RTMP URL for stream to receive video data from encoder. This URL is used for your encoder to send data to"}];
+  string rtmp_url = 14 [
+    (grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {description: "Unique ingest RTMP URL for stream to receive video data from encoder. This URL is used for your encoder to send data to"},
+    (gogoproto.customname) = "RtmpURL"
+  ];
 
   InputType input_type = 15;
   OutputType output_type = 16;
+  double total_cost = 18;
 }
 
 message StreamListResponse {
-    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_schema) = {
+  option (grpc.gateway.protoc_gen_swagger.options.openapiv2_schema) = {
 		json_schema: {
 			description: "List of streams."
 		};
 		example: {
-            value: '{ "id": "4a1c3973-8cf6-49af-4a56-7a1d49c2bac6", "name": "Live", "output_url": "https://streams.videocoin.network/4a1c3973-8cf6-49af-4a56-7a1d49c2bac6/index.m3u8", "stream_contract_id": "2758350251200610030", "stream_contract_address": "", "status": "STREAM_STATUS_NEW", "input_status": "INPUT_STATUS_NONE", "created_at": "2019-11-06T19:31:03.059408235Z", "updated_at": "2019-11-06T19:31:03.059460430Z", "ready_at": null, "completed_at": null, "rtmp_url": "rtmp://rtmp.studio.videocoin.network:1935/live/4a1c3973-8cf6-49af-4a56-7a1d49c2bac6" }'
-        }
-
+      value: '{ "id": "4a1c3973-8cf6-49af-4a56-7a1d49c2bac6", "name": "Live", "output_url": "https://streams.videocoin.network/4a1c3973-8cf6-49af-4a56-7a1d49c2bac6/index.m3u8", "stream_contract_id": "2758350251200610030", "stream_contract_address": "", "status": "STREAM_STATUS_NEW", "input_status": "INPUT_STATUS_NONE", "created_at": "2019-11-06T19:31:03.059408235Z", "updated_at": "2019-11-06T19:31:03.059460430Z", "ready_at": null, "completed_at": null, "rtmp_url": "rtmp://rtmp.studio.videocoin.network:1935/live/4a1c3973-8cf6-49af-4a56-7a1d49c2bac6" }'
+    }
 	};
-    repeated StreamResponse items = 1;
+  
+  repeated StreamResponse items = 1;
 }

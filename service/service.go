@@ -1,107 +1,105 @@
 package service
 
 import (
-	"os"
+	"context"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/videocoin/cloud-uploader/datastore"
+
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	"github.com/sirupsen/logrus"
-	splitterv1 "github.com/videocoin/cloud-api/splitter/v1"
-	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
-	"gopkg.in/redis.v5"
+	clientv1 "github.com/videocoin/cloud-api/client/v1"
+	"github.com/videocoin/cloud-uploader/downloader"
+	"github.com/videocoin/cloud-uploader/server"
 )
 
-type UploaderService struct {
-	config       *Config
-	logger       *logrus.Entry
-	api          *echo.Echo
-	cli          *redis.Client
-	streams      privatev1.StreamsServiceClient
-	splitter     splitterv1.SplitterServiceClient
-	ProcessErrCh chan error
+type Service struct {
+	cfg        *Config
+	logger     *logrus.Entry
+	server     *server.Server
+	downloader *downloader.Downloader
+	ds         datastore.Datastore
 }
 
-func NewService(
-	config *Config,
-	streams privatev1.StreamsServiceClient,
-	splitter splitterv1.SplitterServiceClient,
-) (*UploaderService, error) {
-	api := echo.New()
-	api.HideBanner = true
-	api.HidePort = true
-	api.DisableHTTP2 = true
-
-	processErrCh := make(chan error, 10)
-
-	opts, err := redis.ParseURL(config.RedisURI)
+func NewService(ctx context.Context, cfg *Config) (*Service, error) {
+	sc, err := clientv1.NewServiceClientFromEnvconfig(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	opts.MaxRetries = 3
-	opts.PoolSize = 10
-
-	cli := redis.NewClient(opts)
+	ds, err := datastore.NewDatastore(ctx, cfg.RedisURI)
 	if err != nil {
 		return nil, err
 	}
 
-	err = cli.Ping().Err()
+	downloaderCtx := downloader.NewContextWithGDriveKey(ctx, cfg.GDriveKey)
+	downloader, err := downloader.NewDownloader(
+		downloaderCtx,
+		cfg.DownloadDir,
+		downloader.WithDatastore(ds),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = os.Stat(config.DownloadDir)
+	serverOpts := []server.Option{
+		server.WithAddr(cfg.Addr),
+		server.WithAuthTokenSecret(cfg.AuthTokenSecret),
+		server.WithDownloader(downloader),
+		server.WithServiceClient(sc),
+		server.WithDatastore(ds),
+	}
+	server, err := server.NewServer(ctx, serverOpts...)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-
-		mkdirErr := os.MkdirAll(config.DownloadDir, os.ModeDir)
-		if mkdirErr != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
-	return &UploaderService{
-		config:       config,
-		logger:       config.Logger,
-		api:          api,
-		cli:          cli,
-		streams:      streams,
-		splitter:     splitter,
-		ProcessErrCh: processErrCh,
+	return &Service{
+		cfg:        cfg,
+		logger:     ctxlogrus.Extract(ctx),
+		server:     server,
+		downloader: downloader,
+		ds:         ds,
 	}, nil
 }
 
-func (s *UploaderService) Start(errCh chan error) {
-	s.logger.Infof("starting api server on %s", s.config.Addr)
-
-	s.route()
-
+func (s *Service) Start(errCh chan error) {
 	go func() {
-		errCh <- s.api.Start(s.config.Addr)
+		s.logger.WithField("addr", s.cfg.Addr).Info("starting api server")
+		errCh <- s.server.Start()
 	}()
 
 	go func() {
-		for err := range s.ProcessErrCh {
-			if err != nil {
-				errCh <- err
-			}
+		s.logger.WithField("dst", s.cfg.DownloadDir).Info("starting downloader")
+		err := s.downloader.Start()
+		if err != nil {
+			errCh <- err
+		}
+	}()
+
+	go func() {
+		s.logger.WithField("uri", s.cfg.RedisURI).Info("starting datastore")
+		err := s.ds.Start()
+		if err != nil {
+			errCh <- err
 		}
 	}()
 }
 
-func (s *UploaderService) Stop() error {
-	return nil
-}
-func (s *UploaderService) route() {
-	s.api.Use(middleware.CORS())
-	s.api.GET("/healthz", s.getHealth)
+func (s *Service) Stop() error {
+	err := s.server.Stop()
+	if err != nil {
+		return err
+	}
 
-	r := s.api.Group("/api/v1/upload/")
-	r.Use(middleware.JWT([]byte(s.config.AuthTokenSecret)))
-	r.POST("local/:id", s.uploadFromFile)
-	r.POST("url/:id", s.uploadFromURL)
-	r.GET("url/:id", s.checkUploadFromURL)
+	err = s.downloader.Stop()
+	if err != nil {
+		return err
+	}
+
+	err = s.ds.Stop()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

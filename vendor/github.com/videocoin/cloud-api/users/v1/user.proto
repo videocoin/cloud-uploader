@@ -36,7 +36,9 @@ enum UserRole {
 }
 
 message UserProfile {
-    string id = 1;
+    string id = 1 [
+		(gogoproto.customname) = "ID"
+	];
     string email = 2;
     string name = 3;
     bool is_active = 4;
