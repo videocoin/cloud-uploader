@@ -56,7 +56,9 @@ func (s *Splitter) dispatch() {
 				f.Error = err
 			}
 
-			logger.Info("splitting has been completed")
+			if f.Error == nil {
+				logger.Info("splitting has been completed")
+			}
 
 			go func() {
 				s.OutputCh <- f
