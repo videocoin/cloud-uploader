@@ -22,3 +22,11 @@ autoscaler:
 secrets:
   secret: ""
   sentryDsn: ""
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limit:
+    cpu: 500m
+    memory: 2Gi

@@ -91,4 +91,4 @@ spec:
             claimName: {{ .Chart.Name }}-fs
             readOnly: false
       nodeSelector:
-        cloud.google.com/gke-nodepool: api
+        cloud.google.com/gke-nodepool: ingester
