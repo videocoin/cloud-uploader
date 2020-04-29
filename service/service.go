@@ -56,6 +56,7 @@ func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 		server.WithDownloader(downloader),
 		server.WithServiceClient(sc),
 		server.WithDatastore(ds),
+		server.WithSplitter(splitter),
 	}
 	server, err := server.NewServer(ctx, serverOpts...)
 	if err != nil {

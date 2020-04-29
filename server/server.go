@@ -60,7 +60,7 @@ func (s *Server) route() {
 
 	r.POST("local/:id", s.uploadFromFile)
 	r.POST("url/:id", s.uploadFromURL)
-	r.GET("url/:id", s.checkUploadFromURL)
+	r.GET("url/:id", s.getUploadInfo)
 }
 
 func (s *Server) Start() error {

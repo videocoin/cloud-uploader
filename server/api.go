@@ -8,14 +8,13 @@ import (
 	"os"
 	"path"
 
-	"github.com/videocoin/cloud-uploader/splitter"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	pstreamsv1 "github.com/videocoin/cloud-api/streams/private/v1"
 	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	"github.com/videocoin/cloud-uploader/downloader"
+	"github.com/videocoin/cloud-uploader/splitter"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -66,7 +65,7 @@ func (s *Server) uploadFromURL(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func (s *Server) checkUploadFromURL(c echo.Context) error {
+func (s *Server) getUploadInfo(c echo.Context) error {
 	streamID := c.Param("id")
 
 	logger := s.logger.WithField("stream_id", streamID)

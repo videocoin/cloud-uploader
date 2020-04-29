@@ -42,9 +42,6 @@ docker-test-run:
 	docker run --net=host -e "GDRIVE_KEY=${GDRIVE_KEY}" -e "AUTH_TOKEN_SECRET=${AUTH_TOKEN_SECRET}" tests make test-integration
 
 docker-build:
-	@ if [ "${CI}" = "" ]; then \
-        make lint; \
-    fi
 	docker build -t gcr.io/${GCP_PROJECT}/${NAME}:${VERSION} -f Dockerfile .
 
 docker-push:

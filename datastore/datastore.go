@@ -69,6 +69,9 @@ func (ds *datastore) CreateFileMeta(ctx context.Context, meta *FileMeta) error {
 func (ds *datastore) GetFileMeta(ctx context.Context, id string) (*FileMeta, error) {
 	data, err := ds.cli.Get(id).Bytes()
 	if err != nil {
+		if err != redis.Nil {
+			return nil, nil
+		}
 		return nil, err
 	}
 
