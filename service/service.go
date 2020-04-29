@@ -81,10 +81,10 @@ func (s *Service) dispatch() {
 			select {
 			case outputFile := <-s.downloader.OutputCh:
 				if outputFile != nil && s.splitter != nil {
-					s.logger.
-						WithField("stream_id", outputFile.StreamID).
-						Info("recieved output file from downloader")
+					logger := s.logger.WithField("stream_id", outputFile.StreamID)
+					logger.Info("recieved output file from downloader")
 					go func() {
+						logger.Info("sending file to splitter")
 						s.splitter.InputCh <- &splitter.MediaFile{
 							StreamID: outputFile.StreamID,
 							Path:     outputFile.Path,
