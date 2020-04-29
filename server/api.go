@@ -39,7 +39,7 @@ func (s *Server) uploadFromURL(c echo.Context) error {
 		return err
 	}
 
-	err, httpErr := s.validate(c.Request().Context(), streamID, userID)
+	err, httpErr := s.validate(c.Request().Context(), streamID, userID, true)
 	if httpErr != nil {
 		if err != nil {
 			logger.WithError(err).Error("failed to validate")
@@ -76,7 +76,7 @@ func (s *Server) getUploadInfo(c echo.Context) error {
 		return err
 	}
 
-	httpErr, err := s.validate(c.Request().Context(), streamID, userID)
+	httpErr, err := s.validate(c.Request().Context(), streamID, userID, false)
 	if httpErr != nil {
 		if err != nil {
 			logger.WithError(err).Error("failed to validate")
@@ -113,7 +113,7 @@ func (s *Server) uploadFromFile(c echo.Context) error {
 		return err
 	}
 
-	httpErr, err := s.validate(c.Request().Context(), streamID, userID)
+	httpErr, err := s.validate(c.Request().Context(), streamID, userID, true)
 	if httpErr != nil {
 		if err != nil {
 			logger.WithError(err).Error("failed to validate")
@@ -178,7 +178,7 @@ func (s *Server) uploadFromFile(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func (s *Server) validate(ctx context.Context, streamID, userID string) (*echo.HTTPError, error) {
+func (s *Server) validate(ctx context.Context, streamID, userID string, checkStreamStatus bool) (*echo.HTTPError, error) {
 	req := &pstreamsv1.StreamRequest{Id: streamID}
 	stream, err := s.sc.Streams.Get(ctx, req)
 	if err != nil {
@@ -195,9 +195,11 @@ func (s *Server) validate(ctx context.Context, streamID, userID string) (*echo.H
 		return nil, echo.ErrNotFound
 	}
 
-	if stream.Status != streamsv1.StreamStatusPrepared {
-		return echo.NewHTTPError(http.StatusBadRequest, "Stream isn't prepeared"),
-			fmt.Errorf("wrong stream status: %s", stream.Status.String())
+	if checkStreamStatus {
+		if stream.Status != streamsv1.StreamStatusPrepared {
+			return echo.NewHTTPError(http.StatusBadRequest, "Stream isn't prepeared"),
+				fmt.Errorf("wrong stream status: %s", stream.Status.String())
+		}
 	}
 
 	return nil, nil
