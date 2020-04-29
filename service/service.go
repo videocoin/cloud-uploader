@@ -80,7 +80,7 @@ func (s *Service) dispatch() {
 		if s.downloader != nil {
 			select {
 			case outputFile := <-s.downloader.OutputCh:
-				if s.splitter != nil {
+				if outputFile != nil && s.splitter != nil {
 					go func() {
 						s.splitter.InputCh <- &splitter.MediaFile{
 							StreamID: outputFile.StreamID,

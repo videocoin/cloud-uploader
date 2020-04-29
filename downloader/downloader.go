@@ -69,18 +69,6 @@ func (d *Downloader) dispatch() {
 				logger.WithError(err).Error("failed to download")
 			}
 
-			if d.ds != nil {
-				meta := &datastore.FileMeta{
-					ID:   outputFile.StreamID,
-					Size: outputFile.Size,
-					Path: outputFile.Path,
-				}
-				err = d.ds.CreateFileMeta(ctx, meta)
-				if err != nil {
-					logger.WithError(err).Error("failed to create file meta")
-				}
-			}
-
 			go func() {
 				d.OutputCh <- outputFile
 			}()
@@ -169,6 +157,21 @@ func (d *Downloader) downloadFile(f *InputFile) (*OutputFile, error) {
 	}
 	defer dst.Close()
 
+	if d.ds != nil {
+		meta := &datastore.FileMeta{
+			ID:   f.StreamID,
+			Path: f.DestPath,
+			Size: size,
+		}
+		err := d.ds.CreateFileMeta(context.Background(), meta)
+		if err != nil {
+			d.logger.
+				WithField("stream_id", f.StreamID).
+				WithError(err).
+				Error("failed to create file meta")
+		}
+	}
+
 	if _, err := io.Copy(dst, resp.Body); err != nil {
 		return nil, err
 	}
@@ -206,6 +209,21 @@ func (d *Downloader) downloadFileFromGdrive(f *InputFile) (*OutputFile, error) {
 		return nil, err
 	}
 	defer dst.Close()
+
+	if d.ds != nil {
+		meta := &datastore.FileMeta{
+			ID:   f.StreamID,
+			Path: f.DestPath,
+			Size: resp.ContentLength,
+		}
+		err := d.ds.CreateFileMeta(ctx, meta)
+		if err != nil {
+			d.logger.
+				WithField("stream_id", f.StreamID).
+				WithError(err).
+				Error("failed to create file meta")
+		}
+	}
 
 	if _, err = io.Copy(dst, resp.Body); err != nil {
 		return nil, err

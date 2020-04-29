@@ -93,7 +93,7 @@ func (s *Server) getUploadInfo(c echo.Context) error {
 		}
 		if meta != nil {
 			f, err := os.Stat(meta.Path)
-			if err == nil {
+			if err == nil && meta.Size != 0 {
 				resp.Progress = f.Size() * 100 / meta.Size
 			}
 		}
