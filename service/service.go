@@ -77,60 +77,59 @@ func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 
 func (s *Service) dispatch() {
 	go func() {
-		if s.downloader != nil {
-			select {
-			case outputFile := <-s.downloader.OutputCh:
-				if outputFile != nil && s.splitter != nil {
-					logger := s.logger.WithField("stream_id", outputFile.StreamID)
-					logger.Info("recieved output file from downloader")
-					go func() {
-						logger.Info("sending file to splitter")
-						s.splitter.InputCh <- &splitter.MediaFile{
-							StreamID: outputFile.StreamID,
-							Path:     outputFile.Path,
-						}
-					}()
-				}
-			case <-s.stop:
-				return
+		for outputFile := range s.downloader.OutputCh {
+			if outputFile != nil && s.splitter != nil {
+				logger := s.logger.WithField("stream_id", outputFile.StreamID)
+				logger.Info("recieved output file from downloader")
+				go func() {
+					logger.Info("sending file to splitter")
+					s.splitter.InputCh <- &splitter.MediaFile{
+						StreamID: outputFile.StreamID,
+						Path:     outputFile.Path,
+					}
+				}()
 			}
 		}
 	}()
 
-	for mf := range s.splitter.OutputCh {
-		logger := s.logger.WithField("stream_id", mf.StreamID).WithField("path", mf.Path)
-		logger.Info("recieved output from splitter")
+	go func() {
+		for mf := range s.splitter.OutputCh {
+			logger := s.logger.WithField("stream_id", mf.StreamID).WithField("path", mf.Path)
+			logger.Info("recieved output from splitter")
 
-		ctx := ctxlogrus.ToContext(context.Background(), logger)
+			ctx := ctxlogrus.ToContext(context.Background(), logger)
 
-		if mf.Error != nil {
-			logger.WithError(mf.Error).Info("failed to split")
-			if s.sc != nil && s.sc.Streams != nil {
-				s.stopStream(ctx, mf.StreamID)
-			}
-			return
-		}
-
-		s.logger.
-			WithField("stream_id", mf.StreamID).
-			WithField("path", mf.Path).
-			Info("file has been splitted")
-
-		if s.sc != nil && s.sc.Streams != nil {
-			logger.Info("stream publishing")
-
-			streamReq := &pstreamsv1.StreamRequest{
-				Id:       mf.StreamID,
-				Duration: mf.Duration,
-			}
-			_, err := s.sc.Streams.Publish(context.Background(), streamReq)
-			if err != nil {
-				logger.WithError(err).Error("failed to publish stream")
-				s.stopStream(ctx, mf.StreamID)
+			if mf.Error != nil {
+				logger.WithError(mf.Error).Info("failed to split")
+				if s.sc != nil && s.sc.Streams != nil {
+					s.stopStream(ctx, mf.StreamID)
+				}
 				return
 			}
+
+			s.logger.
+				WithField("stream_id", mf.StreamID).
+				WithField("path", mf.Path).
+				Info("file has been splitted")
+
+			if s.sc != nil && s.sc.Streams != nil {
+				logger.Info("stream publishing")
+
+				streamReq := &pstreamsv1.StreamRequest{
+					Id:       mf.StreamID,
+					Duration: mf.Duration,
+				}
+				_, err := s.sc.Streams.Publish(context.Background(), streamReq)
+				if err != nil {
+					logger.WithError(err).Error("failed to publish stream")
+					s.stopStream(ctx, mf.StreamID)
+					return
+				}
+			}
 		}
-	}
+	}()
+
+	<-s.stop
 }
 
 func (s *Service) stopStream(ctx context.Context, streamID string) {
