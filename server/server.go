@@ -11,6 +11,7 @@ import (
 	clientv1 "github.com/videocoin/cloud-api/client/v1"
 	"github.com/videocoin/cloud-uploader/datastore"
 	"github.com/videocoin/cloud-uploader/downloader"
+	"github.com/videocoin/cloud-uploader/splitter"
 )
 
 type Server struct {
@@ -19,6 +20,7 @@ type Server struct {
 	logger          *logrus.Entry
 	e               *echo.Echo
 	downloader      *downloader.Downloader
+	splitter        *splitter.Splitter
 	sc              *clientv1.ServiceClient
 	ds              datastore.Datastore
 }

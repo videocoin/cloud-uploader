@@ -111,7 +111,7 @@ func (d *Downloader) download(ctx context.Context, f *InputFile) (*OutputFile, e
 
 		mkdirErr := os.MkdirAll(dstFolder, 0777)
 		if mkdirErr != nil {
-			return nil, err
+			return nil, mkdirErr
 		}
 	}
 
@@ -229,8 +229,10 @@ func (d *Downloader) Start() error {
 
 		mkdirErr := os.MkdirAll(d.dst, 0777)
 		if mkdirErr != nil {
-			return err
+			return mkdirErr
 		}
+
+		return err
 	}
 
 	d.dispatch()

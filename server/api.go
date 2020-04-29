@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/videocoin/cloud-uploader/splitter"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
@@ -145,7 +147,7 @@ func (s *Server) uploadFromFile(c echo.Context) error {
 
 		mkdirErr := os.MkdirAll(dstFolder, 0777)
 		if mkdirErr != nil {
-			logger.WithError(err).Error("failed to create destination folder")
+			logger.WithError(mkdirErr).Error("failed to create destination folder")
 			return echo.ErrInternalServerError
 		}
 	}
@@ -161,6 +163,17 @@ func (s *Server) uploadFromFile(c echo.Context) error {
 
 	if _, err = io.Copy(dst, src); err != nil {
 		return err
+	}
+
+	if s.splitter != nil {
+		mediaFile := &splitter.MediaFile{
+			StreamID: streamID,
+			Path:     dstPath,
+		}
+
+		go func(mf *splitter.MediaFile) {
+			s.splitter.InputCh <- mf
+		}(mediaFile)
 	}
 
 	return c.NoContent(http.StatusCreated)

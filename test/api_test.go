@@ -26,6 +26,7 @@ import (
 	"github.com/videocoin/cloud-uploader/mock"
 	"github.com/videocoin/cloud-uploader/server"
 	"github.com/videocoin/cloud-uploader/service"
+	"github.com/videocoin/cloud-uploader/splitter"
 )
 
 var (
@@ -38,8 +39,9 @@ type APITestSuite struct {
 	logger     *logrus.Entry
 	cfg        *service.Config
 	srv        *server.Server
-	downloader *downloader.Downloader
 	ds         datastore.Datastore
+	downloader *downloader.Downloader
+	splitter   *splitter.Splitter
 }
 
 func (suite *APITestSuite) SetupSuite() {
@@ -56,7 +58,7 @@ func (suite *APITestSuite) SetupSuite() {
 	require.NoError(suite.T(), err)
 
 	cfg.AuthTokenSecret = "secret"
-	cfg.DownloadDir = "/tmp/uploader"
+	cfg.DownloadDir = "/tmp/hls"
 
 	suite.cfg = cfg
 
@@ -66,6 +68,14 @@ func (suite *APITestSuite) SetupSuite() {
 	suite.downloader = downloader
 	go func() {
 		err := suite.downloader.Start()
+		require.NoError(suite.T(), err)
+	}()
+
+	splitter, err := splitter.NewSplitter(ctx, splitter.WithOutputDir(cfg.DownloadDir))
+	require.NoError(suite.T(), err)
+	suite.splitter = splitter
+	go func() {
+		err := suite.splitter.Start()
 		require.NoError(suite.T(), err)
 	}()
 
@@ -86,6 +96,9 @@ func (suite *APITestSuite) SetupSuite() {
 
 func (suite *APITestSuite) TearDownSuite() {
 	err := suite.downloader.Stop()
+	require.NoError(suite.T(), err)
+
+	err = suite.splitter.Stop()
 	require.NoError(suite.T(), err)
 }
 
@@ -129,6 +142,14 @@ func (suite *APITestSuite) TestUpload_FromFile() {
 
 	_, err = os.Stat(dstPath)
 	require.NoError(suite.T(), err)
+
+	suite.splitter.InputCh <- &splitter.MediaFile{
+		StreamID: mock.StreamID,
+		Path:     dstPath,
+	}
+
+	mediaFile := <-suite.splitter.OutputCh
+	require.NoError(suite.T(), mediaFile.Error)
 }
 
 func (suite *APITestSuite) TestUpload_FromURL_WithGeneralURL() {
@@ -170,6 +191,14 @@ func testUploadFromURL(requestJSON string, suite *APITestSuite) {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), meta)
 	assert.Equal(suite.T(), meta.ID, mock.StreamID)
+
+	suite.splitter.InputCh <- &splitter.MediaFile{
+		StreamID: outputFile.StreamID,
+		Path:     outputFile.Path,
+	}
+
+	mediaFile := <-suite.splitter.OutputCh
+	require.NoError(suite.T(), mediaFile.Error)
 }
 
 func testSetupRequestHeader(req *http.Request, bearer string) {

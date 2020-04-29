@@ -44,7 +44,7 @@ spec:
             - name: ADDR
               value: 0.0.0.0:{{ .Values.service.internalHttpPort }}
             - name: DOWNLOAD_DIR
-              value: "/data/studio/uploader"
+              value: "/data/studio/hls"
             - name: STREAMS_RPC_ADDR
               valueFrom:
                 configMapKeyRef:

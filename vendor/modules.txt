@@ -125,6 +125,8 @@ github.com/uber/jaeger-lib/metrics
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
+# github.com/vansante/go-ffprobe v1.1.0
+github.com/vansante/go-ffprobe
 # github.com/videocoin/cloud-api v0.0.17 => ../cloud-api
 github.com/videocoin/cloud-api/accounts/v1
 github.com/videocoin/cloud-api/billing/private/v1

@@ -5,6 +5,7 @@ import (
 	clientv1 "github.com/videocoin/cloud-api/client/v1"
 	"github.com/videocoin/cloud-uploader/datastore"
 	"github.com/videocoin/cloud-uploader/downloader"
+	"github.com/videocoin/cloud-uploader/splitter"
 )
 
 type Option func(*Server)
@@ -42,5 +43,11 @@ func WithServiceClient(sc *clientv1.ServiceClient) Option {
 func WithDatastore(ds datastore.Datastore) Option {
 	return func(s *Server) {
 		s.ds = ds
+	}
+}
+
+func WithSplitter(splitter *splitter.Splitter) Option {
+	return func(s *Server) {
+		s.splitter = splitter
 	}
 }

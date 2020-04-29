@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 
-	"github.com/videocoin/cloud-uploader/datastore"
-
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	"github.com/sirupsen/logrus"
 	clientv1 "github.com/videocoin/cloud-api/client/v1"
+	pstreamsv1 "github.com/videocoin/cloud-api/streams/private/v1"
+	"github.com/videocoin/cloud-uploader/datastore"
 	"github.com/videocoin/cloud-uploader/downloader"
 	"github.com/videocoin/cloud-uploader/server"
+	"github.com/videocoin/cloud-uploader/splitter"
 )
 
 type Service struct {
@@ -17,11 +18,19 @@ type Service struct {
 	logger     *logrus.Entry
 	server     *server.Server
 	downloader *downloader.Downloader
+	splitter   *splitter.Splitter
 	ds         datastore.Datastore
+	sc         *clientv1.ServiceClient
+	stop       chan bool
 }
 
 func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 	sc, err := clientv1.NewServiceClientFromEnvconfig(ctx, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	splitter, err := splitter.NewSplitter(ctx, splitter.WithOutputDir(cfg.DownloadDir))
 	if err != nil {
 		return nil, err
 	}
@@ -58,14 +67,87 @@ func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 		logger:     ctxlogrus.Extract(ctx),
 		server:     server,
 		downloader: downloader,
+		splitter:   splitter,
 		ds:         ds,
+		sc:         sc,
+		stop:       make(chan bool, 1),
 	}, nil
+}
+
+func (s *Service) dispatch() {
+	if s.downloader != nil {
+		select {
+		case outputFile := <-s.downloader.OutputCh:
+			if s.splitter != nil {
+				go func() {
+					s.splitter.InputCh <- &splitter.MediaFile{
+						StreamID: outputFile.StreamID,
+						Path:     outputFile.Path,
+					}
+				}()
+				go func() {
+					mf := <-s.splitter.OutputCh
+
+					logger := s.logger.WithField("stream_id", mf.StreamID).WithField("path", mf.Path)
+					ctx := ctxlogrus.ToContext(context.Background(), logger)
+
+					if mf.Error != nil {
+						logger.WithError(mf.Error).Info("failed to split")
+						if s.sc != nil && s.sc.Streams != nil {
+							s.stopStream(ctx, mf.StreamID)
+						}
+						return
+					}
+
+					s.logger.
+						WithField("stream_id", mf.StreamID).
+						WithField("path", mf.Path).
+						Info("file has been splitted")
+
+					if s.sc != nil && s.sc.Streams != nil {
+						logger.Info("stream publishing")
+
+						streamReq := &pstreamsv1.StreamRequest{
+							Id:       mf.StreamID,
+							Duration: mf.Duration,
+						}
+						_, err := s.sc.Streams.Publish(context.Background(), streamReq)
+						if err != nil {
+							logger.WithError(err).Error("failed to publish stream")
+							s.stopStream(ctx, mf.StreamID)
+							return
+						}
+
+					}
+				}()
+			}
+		case <-s.stop:
+			return
+		}
+	}
+}
+
+func (s *Service) stopStream(ctx context.Context, streamID string) {
+	logger := ctxlogrus.Extract(ctx)
+	streamReq := &pstreamsv1.StreamRequest{Id: streamID}
+	_, err := s.sc.Streams.Stop(context.Background(), streamReq)
+	if err != nil {
+		logger.WithError(err).Info("failed to stop stream")
+	}
 }
 
 func (s *Service) Start(errCh chan error) {
 	go func() {
 		s.logger.WithField("addr", s.cfg.Addr).Info("starting api server")
 		errCh <- s.server.Start()
+	}()
+
+	go func() {
+		s.logger.WithField("dst", s.cfg.DownloadDir).Info("starting splitter")
+		err := s.splitter.Start()
+		if err != nil {
+			errCh <- err
+		}
 	}()
 
 	go func() {
@@ -83,10 +165,17 @@ func (s *Service) Start(errCh chan error) {
 			errCh <- err
 		}
 	}()
+
+	s.dispatch()
 }
 
 func (s *Service) Stop() error {
 	err := s.server.Stop()
+	if err != nil {
+		return err
+	}
+
+	err = s.splitter.Stop()
 	if err != nil {
 		return err
 	}
@@ -100,6 +189,8 @@ func (s *Service) Stop() error {
 	if err != nil {
 		return err
 	}
+
+	s.stop <- true
 
 	return nil
 }

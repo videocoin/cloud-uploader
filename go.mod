@@ -12,6 +12,7 @@ require (
 	github.com/plutov/echo-logrus v1.0.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
+	github.com/vansante/go-ffprobe v1.1.0
 	github.com/videocoin/cloud-api v0.0.17
 	github.com/videocoin/cloud-pkg v0.0.6
 	google.golang.org/api v0.14.0
