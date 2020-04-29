@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	otecho "github.com/opentracing-contrib/echo"
 	echologrus "github.com/plutov/echo-logrus"
 	"github.com/sirupsen/logrus"
 	clientv1 "github.com/videocoin/cloud-api/client/v1"
@@ -48,6 +49,7 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 }
 
 func (s *Server) route() {
+	s.e.Use(otecho.Middleware("uploader"))
 	s.e.Use(middleware.CORS())
 	s.e.Use(echologrus.Hook())
 
