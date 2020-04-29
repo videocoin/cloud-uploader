@@ -81,6 +81,9 @@ func (s *Service) dispatch() {
 			select {
 			case outputFile := <-s.downloader.OutputCh:
 				if outputFile != nil && s.splitter != nil {
+					s.logger.
+						WithField("stream_id", outputFile.StreamID).
+						Info("recieved output file from downloader")
 					go func() {
 						s.splitter.InputCh <- &splitter.MediaFile{
 							StreamID: outputFile.StreamID,
@@ -96,6 +99,8 @@ func (s *Service) dispatch() {
 
 	for mf := range s.splitter.OutputCh {
 		logger := s.logger.WithField("stream_id", mf.StreamID).WithField("path", mf.Path)
+		logger.Info("recieved output from splitter")
+
 		ctx := ctxlogrus.ToContext(context.Background(), logger)
 
 		if mf.Error != nil {

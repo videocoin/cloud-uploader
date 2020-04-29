@@ -70,6 +70,7 @@ func (d *Downloader) dispatch() {
 			}
 
 			go func() {
+				logger.Info("sending output file to channel")
 				d.OutputCh <- outputFile
 			}()
 		}(f)
