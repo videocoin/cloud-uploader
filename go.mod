@@ -12,12 +12,12 @@ require (
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/plutov/echo-logrus v1.0.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/vansante/go-ffprobe v1.1.0
 	github.com/videocoin/cloud-api v0.0.17
 	github.com/videocoin/cloud-pkg v0.0.6
 	google.golang.org/api v0.14.0
-	google.golang.org/grpc v1.21.1
+	google.golang.org/grpc v1.27.1
 	gopkg.in/redis.v5 v5.2.9
 )
 
