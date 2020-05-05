@@ -101,21 +101,25 @@ func (s *Splitter) Split(ctx context.Context, f *MediaFile) error {
 		return fmt.Errorf("failed to get probe data: %s", err)
 	}
 
-	fmt.Printf("mediadata: %+v\n", mediadata)
-
 	stream := mediadata.GetFirstVideoStream()
 	if stream == nil {
 		return fmt.Errorf("failed to get stream data: %s", err)
 	}
 
-	fmt.Printf("stream 1: %+v\n", stream)
+	if stream.Duration == "" {
+		if mediadata.Format != nil {
+			f.Duration = mediadata.Format.DurationSeconds
+		} else {
+			return fmt.Errorf("failed to get duration: %s", err)
+		}
+	} else {
+		duration, err := strconv.ParseFloat(stream.Duration, 64)
+		if err != nil {
+			return fmt.Errorf("failed to parse duration: %s", err)
+		}
 
-	duration, err := strconv.ParseFloat(stream.Duration, 64)
-	if err != nil {
-		return fmt.Errorf("failed to parse duration: %s", err)
+		f.Duration = duration
 	}
-
-	f.Duration = duration
 
 	outputDir := path.Join(s.outputDir, f.StreamID)
 	_, err = os.Stat(outputDir)
