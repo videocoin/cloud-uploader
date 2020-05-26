@@ -66,7 +66,6 @@ function deploy() {
     helm upgrade \
         --kube-context "${KUBE_CONTEXT}" \
         --install \
-        --timeout 60 \
         --set image.repository="gcr.io/${GCP_PROJECT}/${CHART_NAME}" \
         --set image.tag="${VERSION}" \
         --set replicasCount="${REPLICAS_COUNT}" \
