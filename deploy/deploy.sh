@@ -50,6 +50,7 @@ function has_helm {
 function get_vars() {
     log_info "Getting variables..."
     readonly KUBE_CONTEXT=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/common/kube_context`
+    readonly REPLICAS_COUNT=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/replicasCount`
     readonly STREAMS_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/streamsRpcAddr`
     readonly SPLITTER_RPC_ADDR=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/vars/splitterRpcAddr`
     readonly REDIS_URI=`consul kv get -http-addr=${CONSUL_ADDR} config/${ENV}/services/${CHART_NAME}/secrets/redisUri`
@@ -68,6 +69,7 @@ function deploy() {
         --timeout 60 \
         --set image.repository="gcr.io/${GCP_PROJECT}/${CHART_NAME}" \
         --set image.tag="${VERSION}" \
+        --set replicasCount="${REPLICAS_COUNT}" \
         --set config.streamsRpcAddr="${STREAMS_RPC_ADDR}" \
         --set config.splitterRpcAddr="${SPLITTER_RPC_ADDR}" \
         --set config.fsPath="${FS_PATH}" \
