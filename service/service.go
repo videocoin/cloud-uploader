@@ -104,7 +104,7 @@ func (s *Service) dispatch() {
 				if s.sc != nil && s.sc.Streams != nil {
 					s.stopStream(ctx, mf.StreamID)
 				}
-				return
+				continue
 			}
 
 			s.logger.
@@ -123,7 +123,7 @@ func (s *Service) dispatch() {
 				if err != nil {
 					logger.WithError(err).Error("failed to publish stream")
 					s.stopStream(ctx, mf.StreamID)
-					return
+					continue
 				}
 			}
 		}
