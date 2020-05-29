@@ -81,6 +81,17 @@ func (s *Service) dispatch() {
 			if outputFile != nil && s.splitter != nil {
 				logger := s.logger.WithField("stream_id", outputFile.StreamID)
 				logger.Info("recieved output file from downloader")
+
+				ctx := ctxlogrus.ToContext(context.Background(), logger)
+
+				if outputFile.Error != nil {
+					logger.WithError(outputFile.Error).Info("failed to download")
+					if s.sc != nil && s.sc.Streams != nil {
+						s.stopStream(ctx, outputFile.StreamID)
+					}
+					continue
+				}
+
 				go func() {
 					logger.Info("sending file to splitter")
 					s.splitter.InputCh <- &splitter.MediaFile{

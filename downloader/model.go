@@ -26,4 +26,5 @@ type OutputFile struct {
 	StreamID string
 	Path     string
 	Size     int64
+	Error    error
 }

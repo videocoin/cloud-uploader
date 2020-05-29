@@ -66,7 +66,14 @@ func (d *Downloader) dispatch() {
 
 			outputFile, err := d.download(ctx, f)
 			if err != nil {
-				logger.WithError(err).Error("failed to download")
+				outputFile = &OutputFile{
+					StreamID: f.StreamID,
+					Error:    err,
+				}
+			}
+
+			if outputFile.Error == nil {
+				logger.Info("download has been completed")
 			}
 
 			go func() {

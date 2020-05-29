@@ -52,7 +52,6 @@ func (s *Splitter) dispatch() {
 			ctx := ctxlogrus.ToContext(context.Background(), logger)
 			err := s.Split(ctx, f)
 			if err != nil {
-				logger.WithError(err).Error("failed to split")
 				f.Error = err
 			}
 
