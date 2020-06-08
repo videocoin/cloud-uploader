@@ -201,7 +201,7 @@ func (d *Downloader) downloadFileFromGdrive(f *InputFile) (*OutputFile, error) {
 		return nil, err
 	}
 
-	_, err = srv.Files.Get(f.GDriveID).Fields("id,name,mimeType,size,webContentLink").Do()
+	_, err = srv.Files.Get(f.GDriveID).Fields("id").Do()
 	if err != nil {
 		return nil, err
 	}
