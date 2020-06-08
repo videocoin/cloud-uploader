@@ -124,6 +124,4 @@ workflows:
           filters:
             branches:
               only:
-                - sandbox
                 - develop
-                - staging

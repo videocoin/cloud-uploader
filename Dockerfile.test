@@ -1,7 +1,14 @@
-FROM golang:1.12.4 as builder
+FROM jrottenberg/ffmpeg:4.1-ubuntu as builder
+
+FROM golang:1.14
 
 ARG GDRIVE_KEY
 ARG AUTH_TOKEN_SECRET
 
 WORKDIR /go/src/github.com/videocoin/cloud-uploader
+
+COPY --from=builder /usr/local /usr/local/
+ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:/usr/lib:/usr/lib64:/lib:/lib64
+RUN mkdir /tmp/hls
+
 COPY . .

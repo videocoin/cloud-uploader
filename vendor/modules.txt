@@ -6,7 +6,10 @@ github.com/beorn7/perks/quantile
 github.com/certifi/gocertifi
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
+## explicit
 github.com/dgrijalva/jwt-go
 # github.com/evalphobia/logrus_sentry v0.8.2
 github.com/evalphobia/logrus_sentry
@@ -20,6 +23,9 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/types
+# github.com/golang/mock v1.2.0
+## explicit
+github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.3.3
 github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/jsonpb
@@ -36,6 +42,7 @@ github.com/golang/snappy
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
 # github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
+## explicit
 github.com/grpc-ecosystem/go-grpc-middleware
 github.com/grpc-ecosystem/go-grpc-middleware/auth
 github.com/grpc-ecosystem/go-grpc-middleware/logging
@@ -55,10 +62,14 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru/simplelru
 # github.com/kelseyhightower/envconfig v1.4.0
+## explicit
 github.com/kelseyhightower/envconfig
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/labstack/echo v3.3.10+incompatible
+github.com/labstack/echo
 # github.com/labstack/echo/v4 v4.1.10
+## explicit
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
 # github.com/labstack/gommon v0.3.0
@@ -73,15 +84,20 @@ github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/opentracing-contrib/echo v0.0.0-20190807091611-5fe2e1308f06
+## explicit
 github.com/opentracing-contrib/echo
 # github.com/opentracing/opentracing-go v1.1.0
+## explicit
 github.com/opentracing/opentracing-go
 github.com/opentracing/opentracing-go/ext
 github.com/opentracing/opentracing-go/log
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/plutov/echo-logrus v1.0.0
+## explicit
 github.com/plutov/echo-logrus
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/prometheus/client_golang v1.4.1
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -98,9 +114,15 @@ github.com/prometheus/procfs/internal/util
 # github.com/schoentoon/logrus-loki v0.0.0-20191021224953-4928b3c6b192
 github.com/schoentoon/logrus-loki
 # github.com/sirupsen/logrus v1.4.2
+## explicit
 github.com/sirupsen/logrus
 # github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 github.com/streadway/amqp
+# github.com/stretchr/testify v1.4.0
+## explicit
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
 # github.com/uber/jaeger-client-go v2.22.1+incompatible
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-client-go/config
@@ -127,8 +149,10 @@ github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
 # github.com/vansante/go-ffprobe v1.1.0
+## explicit
 github.com/vansante/go-ffprobe
-# github.com/videocoin/cloud-api v0.0.17 => ../cloud-api
+# github.com/videocoin/cloud-api v1.0.0 => ../cloud-api
+## explicit
 github.com/videocoin/cloud-api/accounts/v1
 github.com/videocoin/cloud-api/billing/private/v1
 github.com/videocoin/cloud-api/billing/v1
@@ -136,6 +160,7 @@ github.com/videocoin/cloud-api/client/v1
 github.com/videocoin/cloud-api/dispatcher/v1
 github.com/videocoin/cloud-api/emitter/v1
 github.com/videocoin/cloud-api/miners/v1
+github.com/videocoin/cloud-api/mock
 github.com/videocoin/cloud-api/profiles/v1
 github.com/videocoin/cloud-api/splitter/v1
 github.com/videocoin/cloud-api/streams/private/v1
@@ -143,6 +168,7 @@ github.com/videocoin/cloud-api/streams/v1
 github.com/videocoin/cloud-api/users/v1
 github.com/videocoin/cloud-api/validator/v1
 # github.com/videocoin/cloud-pkg v0.0.6 => ../cloud-pkg
+## explicit
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/mqmux
@@ -193,6 +219,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # google.golang.org/api v0.14.0
+## explicit
 google.golang.org/api/drive/v2
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
@@ -218,6 +245,7 @@ google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/protobuf/field_mask
 # google.golang.org/grpc v1.27.1
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -255,9 +283,14 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 # gopkg.in/redis.v5 v5.2.9
+## explicit
 gopkg.in/redis.v5
 gopkg.in/redis.v5/internal
 gopkg.in/redis.v5/internal/consistenthash
 gopkg.in/redis.v5/internal/hashtag
 gopkg.in/redis.v5/internal/pool
 gopkg.in/redis.v5/internal/proto
+# gopkg.in/yaml.v2 v2.2.8
+gopkg.in/yaml.v2
+# github.com/videocoin/cloud-pkg => ../cloud-pkg
+# github.com/videocoin/cloud-api => ../cloud-api
