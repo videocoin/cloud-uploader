@@ -13,7 +13,7 @@ spec:
 {{ end }}
   ports:
     - port: {{ .Values.service.externalHttpPort }}
-      targetPort: {{ .Values.service.internalHttpPort }}
+      targetPort: {{ .Values.service.http }}
       protocol: TCP
       name: http
   selector:

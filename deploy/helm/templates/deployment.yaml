@@ -25,15 +25,15 @@ spec:
             - mountPath: /data/studio
               name: {{ .Chart.Name }}-fs
           ports:
-            - containerPort: {{ .Values.service.internalHttpPort }}
+            - containerPort: {{ .Values.service.http }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.service.internalHttpPort }}
+              port: {{ .Values.service.http }}
           readinessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.service.internalHttpPort }}
+              port: {{ .Values.service.http }}
           env:
             - name: JAEGER_AGENT_HOST
               valueFrom:
@@ -42,7 +42,7 @@ spec:
             - name: JAEGER_AGENT_PORT
               value: "6831"
             - name: ADDR
-              value: 0.0.0.0:{{ .Values.service.internalHttpPort }}
+              value: 0.0.0.0:{{ .Values.service.http }}
             - name: DOWNLOAD_DIR
               value: "/data/studio/hls"
             - name: STREAMS_RPC_ADDR
@@ -90,5 +90,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Chart.Name }}-fs
             readOnly: false
-      nodeSelector:
-        cloud.google.com/gke-nodepool: ingester
+      {{- with .Values.nodeSelector }}
+        nodeSelector:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}

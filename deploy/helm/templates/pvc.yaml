@@ -5,7 +5,7 @@ metadata:
 spec:
   accessModes:
   - ReadWriteMany
-  storageClassName: ""
+  storageClassName: "nfs-client"
   resources:
     requests:
       storage: 1T

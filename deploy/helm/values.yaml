@@ -1,17 +1,20 @@
-replicasCount: 3
+replicasCount: 1
 maxUnavailableCount: 0
 
 image:
-  repository: gcr.io/videocoin-network/uploader
+  repository: registry.videocoin.net/cloud/uploader
   tag: latest
   pullPolicy: Always
 
 config: {}
 
+serviceAccount:
+  name: default
+
 service:
   type: ClusterIP
   externalHttpPort: 8090
-  internalHttpPort: 8090
+  http: 8090
 
 autoscaler:
   minCount: 1
@@ -20,7 +23,16 @@ autoscaler:
     targetCPUUtilizationPercentage: 70
 
 secrets:
-  secret: ""
   sentryDsn: ""
+  redisUri: "cmVkaXM6Ly86cmVkaXNAcmVkaXMtbWFzdGVyOjYzNzkvMg=="
+  authTokenSecret: "N012TnNxRVhxaXpuQmtDaQ=="
+  gdriveKey: "QUl6YVN5RGhVZXNnN3FLeDZNbGgwY3dOR2I2cHZoZHZzaElocGU4"
 
 resources: {}
+
+
+config:
+  fsPath: /studio
+  fsAddr: 10.129.14.250
+  splitterRpcAddr: splitter:5103
+  streamsRpcAddr: streams:5102
