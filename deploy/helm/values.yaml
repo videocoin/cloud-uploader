@@ -30,9 +30,5 @@ secrets:
 
 resources: {}
 
-
 config:
-  fsPath: /studio
-  fsAddr: 10.129.14.250
-  splitterRpcAddr: splitter:5103
-  streamsRpcAddr: streams:5102
+  streamsRpcAddr: streams.console.svc.cluster.local:5102

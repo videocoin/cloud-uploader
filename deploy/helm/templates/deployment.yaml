@@ -50,11 +50,6 @@ spec:
                 configMapKeyRef:
                   name: {{ .Chart.Name }}
                   key: streamsRpcAddr
-            - name: SPLITTER_RPC_ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: splitterRpcAddr
             - name: REDISURI
               valueFrom:
                 secretKeyRef:
