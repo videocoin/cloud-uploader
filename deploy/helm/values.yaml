@@ -5,6 +5,8 @@ image:
   repository: registry.videocoin.net/cloud/uploader
   tag: latest
   pullPolicy: Always
+  pullSecrets:
+  - name: regcred
 
 config: {}
 
@@ -22,13 +24,22 @@ autoscaler:
   targets:
     targetCPUUtilizationPercentage: 70
 
-secrets:
-  sentryDsn: ""
-  redisUri: "cmVkaXM6Ly86cmVkaXNAcmVkaXMtbWFzdGVyOjYzNzkvMg=="
-  authTokenSecret: "N012TnNxRVhxaXpuQmtDaQ=="
-  gdriveKey: "QUl6YVN5RGhVZXNnN3FLeDZNbGgwY3dOR2I2cHZoZHZzaElocGU4"
-
 resources: {}
 
 config:
   streamsRpcAddr: streams.console.svc.cluster.local:5102
+
+annotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/role: "console-uploader"
+  vault.hashicorp.com/agent-inject-secret-common: "videocoin/v1/networks/everest-dev/console/common"
+  vault.hashicorp.com/agent-inject-secret-config: "videocoin/v1/networks/everest-dev/console/uploader"
+  vault.hashicorp.com/agent-inject-template-common: |
+    {{ with secret "videocoin/v1/networks/everest-dev/console/common" }}{{ range $k, $v := .Data }}
+    export {{ $k }}="{{ $v }}"
+    {{ end }}{{ end }}
+  vault.hashicorp.com/agent-inject-template-config: |
+    {{ with secret "videocoin/v1/networks/everest-dev/console/uploader" }}{{ range $k, $v := .Data }}
+    export {{ $k }}="{{ $v }}"
+    {{ end }}{{ end }}
+

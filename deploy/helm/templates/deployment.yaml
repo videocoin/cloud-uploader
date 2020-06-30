@@ -16,11 +16,22 @@ spec:
       name: {{ .Release.Name }}
       labels:
         app: {{ .Release.Name }}
+    {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
     spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      automountServiceAccountToken: true
       containers:
         - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["bash", "-c", "source /vault/secrets/common && source /vault/secrets/config && /opt/videocoin/bin/uploader"]
           volumeMounts:
             - mountPath: /data/studio
               name: {{ .Chart.Name }}-fs
@@ -50,26 +61,11 @@ spec:
                 configMapKeyRef:
                   name: {{ .Chart.Name }}
                   key: streamsRpcAddr
-            - name: REDISURI
+            - name: SPLITTER_RPC_ADDR
               valueFrom:
-                secretKeyRef:
+                configMapKeyRef:
                   name: {{ .Chart.Name }}
-                  key: redisUri
-            - name: AUTH_TOKEN_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: authTokenSecret
-            - name: GDRIVE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: gdriveKey
-            - name: SENTRY_DSN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: sentryDsn
+                  key: splitterRpcAddr
           {{- if .Values.resources }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
@@ -78,9 +74,6 @@ spec:
         - name: config
           configMap:
             name: {{ .Release.Name }}
-        - name: secrets
-          secret:
-            secretName: {{ .Release.Name }}
         - name: {{ .Chart.Name }}-fs
           persistentVolumeClaim:
             claimName: {{ .Chart.Name }}-fs
