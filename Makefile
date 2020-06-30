@@ -50,4 +50,4 @@ docker-push:
 release: docker-build docker-push
 
 deploy:
-	cd deploy && helm upgrade -i --wait --set image.tag="${VERSION}" -n console uploader ./helm
+	cd deploy && helm upgrade -i --wait --timeout 30s --set image.tag="${VERSION}" -n console uploader ./helm

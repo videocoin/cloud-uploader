@@ -28,6 +28,8 @@ resources: {}
 
 config:
   streamsRpcAddr: streams.console.svc.cluster.local:5102
+  fsPath: /studio
+  fsAddr: 10.129.14.250
 
 annotations:
   vault.hashicorp.com/agent-inject: "true"

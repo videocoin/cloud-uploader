@@ -61,11 +61,6 @@ spec:
                 configMapKeyRef:
                   name: {{ .Chart.Name }}
                   key: streamsRpcAddr
-            - name: SPLITTER_RPC_ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: splitterRpcAddr
           {{- if .Values.resources }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
