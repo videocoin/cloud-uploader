@@ -4,6 +4,9 @@ COPY . .
 RUN make build
 
 FROM jrottenberg/ffmpeg:4.1-ubuntu
+
+ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:/usr/lib:/usr/lib64:/lib:/lib64:/lib/x86_64-linux-gnu
+
 RUN apt-get update && \
     apt-get -y --force-yes install \
         mediainfo \
