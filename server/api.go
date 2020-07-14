@@ -55,7 +55,7 @@ func (s *Server) uploadFromURL(c echo.Context) error {
 	}
 
 	logger = logger.WithField("url", reqData.URL)
-	logger.Info("uplodaing from url")
+	logger.Info("uploading from url")
 
 	s.downloader.InputCh <- &downloader.InputFile{
 		StreamID: streamID,

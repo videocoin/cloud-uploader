@@ -138,15 +138,21 @@ func (s *Splitter) Split(ctx context.Context, f *MediaFile) error {
 	args := []string{
 		"-i",
 		f.Path,
-		"-codec",
+		"-c:v",
 		"copy",
+		"-c:a",
+		"copy",
+		"-map",
+		"0:v",
+		"-map",
+		"0:a",
 		"-f",
 		"segment",
 		"-segment_time",
 		strconv.Itoa(s.segmentTime),
 		"-segment_list",
 		path.Join(s.outputDir, f.StreamID, "index.m3u8"),
-		path.Join(s.outputDir, f.StreamID, "%d.ts"),
+		path.Join(s.outputDir, f.StreamID, "%d.mkv"),
 	}
 
 	logger.Infof("ffmpeg %s", strings.Join(args, " "))
