@@ -1,0 +1,98 @@
+kind: pipeline
+type: kubernetes
+name: develop
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      registry: registry.videocoin.net
+      repo: registry.videocoin.net/cloud/uploader
+      tags:
+        - latest
+        - ${DRONE_COMMIT_SHA}
+  - name: deploy
+    image: devth/helm:v3.1.1
+    environment:
+      KUBE_CONFIG:
+        from_secret: dev_kube_config
+    commands:
+      - echo $KUBE_CONFIG | base64 -d > kube.config
+      - helm --kubeconfig=kube.config upgrade -i --wait --set image.tag=$DRONE_COMMIT_SHA -n console uploader ./deploy/helm
+
+trigger:
+  event:
+    - push
+  branch:
+    - infra
+
+---
+
+kind: pipeline
+type: kubernetes
+name: release
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      registry: registry.videocoin.net
+      repo: registry.videocoin.net/cloud/uploader
+      tags:
+        - ${DRONE_TAG}
+  - name: deploy
+    image: devth/helm:v3.1.1
+    environment:
+      KUBE_CONFIG:
+        from_secret: stage_kube_config
+    commands:
+      - echo $KUBE_CONFIG | base64 -d > kube.config
+      - helm --kubeconfig=kube.config upgrade -i --wait --set image.tag=$DRONE_TAG -n console uploader ./deploy/helm
+    when:
+      branch:
+      - master
+trigger:
+  event:
+    - push
+  branch:
+    - pe-1
+    - pe-2
+    - master
+
+---
+
+kind: pipeline
+type: kubernetes
+name: helm-push
+
+steps:
+  - name: lint-chart
+    image: pelotech/drone-helm3
+    settings:
+      mode: lint
+      chart: ./deploy/helm
+  - name: publish-chart
+    image: devth/helm:v3.1.1
+    environment:
+      USERNAME:
+        from_secret: registry_username
+      PASSWORD:
+        from_secret: registry_password
+    commands:
+      - helm repo add console https://registry.videocoin.net/chartrepo/cloud --username $$USERNAME --password $$PASSWORD
+      - helm plugin install https://github.com/chartmuseum/helm-push
+      - helm push ./deploy/helm console --username $$USERNAME --password $$PASSWORD
+
+trigger:
+  event:
+    - push
+  branch:
+    - infra
